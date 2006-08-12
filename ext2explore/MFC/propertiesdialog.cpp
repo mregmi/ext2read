@@ -34,7 +34,7 @@ int PropertiesDialog::OnInitDialog()
 	int pic;
 	CString str;
 
-	if(FT_ISDIR(entry->fileType))
+	if(EXT2_FT_ISDIR(entry->fileType))
 		pic = IDI_ICON_DIR_32;
 	else
 		pic = IDI_ICON_FILE_32;

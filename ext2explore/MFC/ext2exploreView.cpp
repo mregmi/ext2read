@@ -48,14 +48,14 @@ void Cext2exploreView::Browse()
 	ctrl.DeleteAllItems();
 	while(get_dir_entry(&entry) != -1)
 	{
-		if(FT_ISDIR(entry.fileType))
+		if(EXT2_FT_ISDIR(entry.fileType))
 			image = 2;
 		else
 			image = 1;
 
 		item = ctrl.InsertItem(cnt, entry.fileName, image);
 		
-		if(!FT_ISDIR(entry.fileType))
+		if(!EXT2_FT_ISDIR(entry.fileType))
 			Cext2exploreApp::GetSizeString(str, entry.ino.i_size);
 		else
 			str = " ";

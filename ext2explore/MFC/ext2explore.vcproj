@@ -45,8 +45,8 @@
 				Name="VCCLCompilerTool"
 				UseUnicodeResponseFiles="false"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\;..\platform\;..\ext2\;..\lvm;"
-				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG"
+				AdditionalIncludeDirectories="..\..\core;..\..\core\platform\;..\..\core\ext2\;..\..\core\lvm;"
+				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -128,8 +128,8 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\;..\platform;..\ext2;..\lvm;"
-				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG"
+				AdditionalIncludeDirectories="..\..\core;..\..\core\platform\;..\..\core\ext2\;..\..\core\lvm;"
+				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_DEPRECATE;"
 				MinimalRebuild="false"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
@@ -244,19 +244,19 @@
 				Name="ext2"
 				>
 				<File
-					RelativePath="..\ext2\ext2io.c"
+					RelativePath="..\..\core\ext2\ext2io.c"
 					>
 				</File>
 				<File
-					RelativePath="..\ext2\inode.c"
+					RelativePath="..\..\core\ext2\inode.c"
 					>
 				</File>
 				<File
-					RelativePath="..\ext2\mount.c"
+					RelativePath="..\..\core\ext2\mount.c"
 					>
 				</File>
 				<File
-					RelativePath="..\ext2\namei.c"
+					RelativePath="..\..\core\ext2\namei.c"
 					>
 				</File>
 			</Filter>
@@ -264,7 +264,7 @@
 				Name="platform"
 				>
 				<File
-					RelativePath="..\platform\platform_win32.c"
+					RelativePath="..\..\core\platform\platform_win32.c"
 					>
 				</File>
 			</Filter>
@@ -272,15 +272,11 @@
 				Name="core"
 				>
 				<File
-					RelativePath="..\log.c"
+					RelativePath="..\..\core\log.c"
 					>
 				</File>
 				<File
-					RelativePath="..\partition.c"
-					>
-				</File>
-				<File
-					RelativePath="..\print.c"
+					RelativePath="..\..\core\partition.c"
 					>
 				</File>
 			</Filter>
@@ -288,11 +284,7 @@
 				Name="lvm"
 				>
 				<File
-					RelativePath="..\lvm\lvm.c"
-					>
-				</File>
-				<File
-					RelativePath="..\lvm\lvm.h"
+					RelativePath="..\..\core\lvm\lvm.c"
 					>
 				</File>
 			</Filter>

@@ -480,7 +480,7 @@ void CMainFrame::SaveExt2File()
 	if(ret < 0)
 		return;
 
-	if(!FT_ISREG(entry.fileType) && !FT_ISDIR(entry.fileType))
+	if(!EXT2_FT_ISREG(entry.fileType) && !EXT2_FT_ISDIR(entry.fileType))
 		return;
 
 	fdlg = new CFileDialog(false, NULL, entry.fileName);

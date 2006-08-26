@@ -16,7 +16,7 @@
 #
  
 INCL = -I. -I./platform/ -I./ext2/
-OBJS = ./ext2/ext2.o ./platform/platform.o ./lvm/lvm.o partition.o log.o
+OBJS = ./ext2/ext2.o ./platform/platform.o ./lvm/lvms.o partition.o log.o
 OPTIONS = -Wall -O2
 
 LD = ld

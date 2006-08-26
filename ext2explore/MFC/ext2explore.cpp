@@ -38,7 +38,6 @@ Cext2exploreApp::Cext2exploreApp()
 
 Cext2exploreApp theApp;
 
-#include <stdio.h>
 void Cext2exploreApp::GetSizeString(CString& str, unsigned long size)
 {
 	float lsize = (float)size;

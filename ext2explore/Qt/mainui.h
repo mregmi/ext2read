@@ -38,11 +38,11 @@ public:
 	MainUi(QWidget *parent = 0);
 	~MainUi();
 
-	void ScanSystem();
+	DIRENTRY *ScanSystem();
 private:
 
 
-private:
+public:
 	ViewModel *model;
 	QListView *list;
 	QTreeView *tree;

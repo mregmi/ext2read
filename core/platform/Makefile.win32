@@ -7,7 +7,7 @@
 
 
 OPTIONS = -Wall -O2
-INCLS = -I../
+INCLS = -I".\" -I"..\"
 
 CC = gcc
 AS = as

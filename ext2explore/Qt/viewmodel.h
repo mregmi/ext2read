@@ -63,6 +63,7 @@ class ViewModel : public QAbstractItemModel
 	Q_OBJECT
 
 public:
+	ViewModel() {};
 	ViewModel(DIRENTRY *entry, int nEntries, QObject *parent = 0);
 	~ViewModel();
 

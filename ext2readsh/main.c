@@ -27,17 +27,19 @@
 #include "ext2read.h"
 #include "platform.h"
 #include "partition.h"
-
+#include "shell.h"
 
 extern struct sys sys;
 
 int main(int argc, char **argv)
 {
 	int i, ret;
-	char pathname[20];
+	char pathname[256];
 	struct partition *p;
 
+    log_init();
 	sys.ndisks = get_ndisks();
+	
 
 	TRACE("No of disks %d\n", sys.ndisks);
 	for(i = 0; i < sys.ndisks; i++)
@@ -51,8 +53,12 @@ int main(int argc, char **argv)
 		}
 	}
 
-	p = ask_for_choice();
-
-	getchar();
+	p = ask_for_choice(pathname);
+	if(!p)
+	      return 1;
+	      
+ 	mount_ext2(p);
+	start_shell(pathname);
+	fflush(stdin);
 	getchar();
 }

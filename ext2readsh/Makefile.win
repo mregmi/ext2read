@@ -1,0 +1,63 @@
+# Project: ext2readsh
+# Makefile created by Dev-C++ 4.9.9.2
+
+CPP  = g++.exe
+CC   = gcc.exe
+WINDRES = windres.exe
+RES  = 
+OBJ  = main.o print.o ../core/log.o ../core/partition.o ../core/ext2/ext2io.o ../core/ext2/inode.o ../core/ext2/mount.o ../core/ext2/namei.o ../core/lvm/lvm.o ../core/platform/platform_win32.o shell.o commands.o $(RES)
+LINKOBJ  = main.o print.o ../core/log.o ../core/partition.o ../core/ext2/ext2io.o ../core/ext2/inode.o ../core/ext2/mount.o ../core/ext2/namei.o ../core/lvm/lvm.o ../core/platform/platform_win32.o shell.o commands.o $(RES)
+LIBS =  -L"C:/Dev-Cpp/lib"  
+INCS =  -I"C:/Dev-Cpp/include"  -I"E:/projectx/myprj/ext2read/ext2read2.0beta/core"  -I"E:/projectx/myprj/ext2read/ext2read2.0beta/core/ext2"  -I"E:/projectx/myprj/ext2read/ext2read2.0beta/core/lvm"  -I"E:/projectx/myprj/ext2read/ext2read2.0beta/core/platform" 
+CXXINCS =  -I"C:/Dev-Cpp/lib/gcc/mingw32/3.4.2/include"  -I"C:/Dev-Cpp/include/c++/3.4.2/backward"  -I"C:/Dev-Cpp/include/c++/3.4.2/mingw32"  -I"C:/Dev-Cpp/include/c++/3.4.2"  -I"C:/Dev-Cpp/include"  -I"E:/projectx/myprj/ext2read/ext2read2.0beta/core"  -I"E:/projectx/myprj/ext2read/ext2read2.0beta/core/ext2"  -I"E:/projectx/myprj/ext2read/ext2read2.0beta/core/lvm"  -I"E:/projectx/myprj/ext2read/ext2read2.0beta/core/platform" 
+BIN  = ext2readsh.exe
+CXXFLAGS = $(CXXINCS)  
+CFLAGS = $(INCS)  
+RM = rm -f
+
+.PHONY: all all-before all-after clean clean-custom
+
+all: all-before ext2readsh.exe all-after
+
+
+clean: clean-custom
+	${RM} $(OBJ) $(BIN)
+
+$(BIN): $(OBJ)
+	$(CC) $(LINKOBJ) -o "ext2readsh.exe" $(LIBS)
+
+main.o: main.c
+	$(CC) -c main.c -o main.o $(CFLAGS)
+
+print.o: print.c
+	$(CC) -c print.c -o print.o $(CFLAGS)
+
+../core/log.o: ../core/log.c
+	$(CC) -c ../core/log.c -o ../core/log.o $(CFLAGS)
+
+../core/partition.o: ../core/partition.c
+	$(CC) -c ../core/partition.c -o ../core/partition.o $(CFLAGS)
+
+../core/ext2/ext2io.o: ../core/ext2/ext2io.c
+	$(CC) -c ../core/ext2/ext2io.c -o ../core/ext2/ext2io.o $(CFLAGS)
+
+../core/ext2/inode.o: ../core/ext2/inode.c
+	$(CC) -c ../core/ext2/inode.c -o ../core/ext2/inode.o $(CFLAGS)
+
+../core/ext2/mount.o: ../core/ext2/mount.c
+	$(CC) -c ../core/ext2/mount.c -o ../core/ext2/mount.o $(CFLAGS)
+
+../core/ext2/namei.o: ../core/ext2/namei.c
+	$(CC) -c ../core/ext2/namei.c -o ../core/ext2/namei.o $(CFLAGS)
+
+../core/lvm/lvm.o: ../core/lvm/lvm.c
+	$(CC) -c ../core/lvm/lvm.c -o ../core/lvm/lvm.o $(CFLAGS)
+
+../core/platform/platform_win32.o: ../core/platform/platform_win32.c
+	$(CC) -c ../core/platform/platform_win32.c -o ../core/platform/platform_win32.o $(CFLAGS)
+
+shell.o: shell.c
+	$(CC) -c shell.c -o shell.o $(CFLAGS)
+
+commands.o: commands.c
+	$(CC) -c commands.c -o commands.o $(CFLAGS)

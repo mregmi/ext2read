@@ -45,7 +45,7 @@ int scan_lvm(struct partition *p)
 		LOG("Error reading LVM");
 	}
 
-	pv = buf;
+	pv = (struct pv_metadata *)buf;
 	ret = sizeof(*pv);
 	dsk = NULL;
 	free(pv);

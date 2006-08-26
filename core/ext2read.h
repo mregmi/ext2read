@@ -32,6 +32,7 @@
 #include "ext2fs.h"
 
 #define FILE_TYPE_PARTITON		0x7E
+#define FILE_TYPE_DIR			2
 
 /* Identifies the type of file by using i_mode of inode */
 /* structure as input.									*/
@@ -168,15 +169,19 @@ int mount_partition(const char *path);
 void get_choice(const char *partstr, int *disk, int *part);
 int read_ext2block(int blocknum, void *buffer);
 int enter_new_dir(uint32_t inode, const char *name);
+int ext2_cd(DIRENTRY *entry, const char *name);
 int read_inode(uint32_t iNum, EXT2_INODE *inode);
 int mount_ext2(struct partition *part);
 int get_dir_entry(DIRENTRY *dir);
+int get_direntries(DIRENTRY * entry, DIRENTRY *parent);
 void init_root_dir();
 void fini_root_dir();
 int read_data_block(EXT2_INODE *ino, uint32_t lbn, void *buf);
 int get_dentry_inode(DIRENTRY *entry, uint32_t inode);
 int save_file(const char *path, uint32_t ino);
 int __save_file(const char *path, uint32_t ino);
+int get_direntry_by_name(const char *name, DIRENTRY *curdir, DIRENTRY *out);
+int path_to_direntry(const char *path, DIRENTRY *entry);
 void free_system();
 void namei_init();
 void namei_exit();

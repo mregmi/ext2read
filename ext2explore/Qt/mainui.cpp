@@ -46,7 +46,7 @@ MainUi::~MainUi()
 }
 
 
-void MainUi::ScanSystem()
+DIRENTRY *MainUi::ScanSystem()
 {
 	char pathname[50];
 	struct partition *p;
@@ -94,4 +94,6 @@ void MainUi::ScanSystem()
 //	model = new ViewModel(entry, sys.linuxparts);
 //	list->setModel(model);
 //	tree->setModel(model);
+
+	return entry;
 }

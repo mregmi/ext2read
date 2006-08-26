@@ -110,7 +110,7 @@ void CMainFrame::ScanSystem()
 			//str.Append("-");
 			//str.Append(part_type(p->systemId));
 			itm = list.InsertItem(cnt, str, 0);
-			list.SetItemData(itm, (DWORD_PTR)cnt);
+			list.SetItemData(itm, (DWORD_PTR)0);
 			tree.InsertItem(str, 0, 0);
 			m_wndToolBar.choice.AddString(str);
 			cnt++;

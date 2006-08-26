@@ -20,7 +20,7 @@ SOURCES	+=	main.cpp 				\
 		../../core/ext2/namei.c 		\
 		../../core/lvm/lvm.c 			\
 
-FORMS	= mainui.ui
+FORMS	= mainui.ui properties.ui
 
 RESOURCES = ext2explore.qrc
 

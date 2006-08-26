@@ -45,7 +45,34 @@ int scan_ebr(struct disk *dsk, int index)
 	lloff_t  ebrBase, nextPart, ebr2=0;
 
 	ebrBase = dsk->part[index].relSect;
+	nextPart = dsk->part[index].relSect;
+	while(1)
+	{
+		read_sector(dsk, nextPart, 1, sector);
+		part = pt_offset(sector, 0);
+		p = &dsk->part[logical];
+		p->systemId = part->sys_ind;
+		p->totalSectors = get_nr_sects(part);
+		p->flag = logical + 1;
+		p->relSect = get_start_sect(part) + ebrBase + ebr2;
+//		p->disk = drive;
 
+		LOG("index %d ID %X size %Ld \n", logical, p->systemId, p->totalSectors);
+		if(part->sys_ind == LVM)
+		{
+			scan_lvm(p);
+		}
+
+		part1 = pt_offset(sector, 1);
+		ebr2 = get_start_sect(part1);
+		nextPart = (ebr2 + ebrBase);
+		
+		logical++;
+		if(part1->sys_ind == 0)
+			break;
+	}
+
+	/*
 	read_sector(dsk, dsk->part[index].relSect, 1, sector);
 
 	do{
@@ -86,7 +113,7 @@ int scan_ebr(struct disk *dsk, int index)
 	{
 		scan_lvm(p);
 	}
-
+*/
 	return logical;
 }
 

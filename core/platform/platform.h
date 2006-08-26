@@ -26,10 +26,14 @@
 
 #ifdef WIN32
 #include <windows.h>
+
  typedef HANDLE FileHandle;
+#ifdef _MSC_VER
  typedef unsigned char uint8_t;
  typedef unsigned short uint16_t;
  typedef unsigned int uint32_t;
+#endif
+ 
  #define FILE_DELIM		"\\"
 #else
  typedef int FileHandle;

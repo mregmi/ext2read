@@ -7,7 +7,7 @@
 
 
 OPTIONS = -Wall -O2
-INCLS = -I. -I"../" -I"../platform/" 
+INCLS = -I"../"
 
 CC = gcc
 AS = as
@@ -17,14 +17,14 @@ MAKEFILE = -f Makefile.win32
 REMOVE = del
 
 	
-OBJS = ext2io.obj inode.obj mount.obj namei.obj
+OBJS = lvm.o
 
-all: ext2.obj
-.c.obj:
+all: lvms.o
+.c.o:
 	$(CC) -c $(OPTIONS) $(INCLS) $< -o $@
 
-ext2.obj: $(OBJS)
-	$(LD) -r -o ext2.obj $(OBJS)
+.o: $(OBJS)
+	$(LD) -r -o lvms.o $(OBJS)
 clear:
-	$(REMOVE) *.c~ *~ *.obj
+	$(REMOVE) *.c~ *~ *.o
 

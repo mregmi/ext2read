@@ -5,26 +5,26 @@
 # Makefile for easy compilation.:-)
 
 
-
+LDOPTS =  -s -shared -Wl,--entry,_DriverEntry -nostartfiles -nostdlib 
 OPTIONS = -Wall -O2
-INCLS = -I. -I"../" -I"../platform/" 
+INCLS = -I.
 
 CC = gcc
 AS = as
-LD = ld
+DLL = dllwrap
 MAKE = mingw32-make 
 MAKEFILE = -f Makefile.win32
-REMOVE = del
+REMOVE = rm
 
 	
-OBJS = ext2io.obj inode.obj mount.obj namei.obj
+OBJS = init.o ifsops.o 
 
-all: ext2.obj
-.c.obj:
+all: ext2readifs.sys
+.c.o:
 	$(CC) -c $(OPTIONS) $(INCLS) $< -o $@
 
-ext2.obj: $(OBJS)
-	$(LD) -r -o ext2.obj $(OBJS)
+ext2readifs.sys: $(OBJS)
+	$(CC) -o ext2readifs.sys $(LDOPTS) $(OBJS) -lntoskrnl
 clear:
-	$(REMOVE) *.c~ *~ *.obj
+	$(REMOVE) *.c~ *~ *.o
 

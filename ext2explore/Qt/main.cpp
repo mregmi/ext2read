@@ -25,20 +25,25 @@
  **/
 
 #include "mainui.h"
+#include "viewmodel.h"
+#include "ext2read.h"
 
 #include <QApplication>
 #include <QDir>
 
+extern "C" struct sys sys;
 
 int main(int argc, char *argv[])
 {
-
+	DIRENTRY *entry;
 	QApplication app(argc, argv);
 
 	Q_INIT_RESOURCE(ext2explore);
 
 	MainUi mainWin;
-	mainWin.ScanSystem();
+	entry = mainWin.ScanSystem();
+	mainWin.model = new ViewModel(entry,sys.linuxparts);
+	mainWin.tree->setModel(mainWin.model);
 	mainWin.show();
 
 	return app.exec();

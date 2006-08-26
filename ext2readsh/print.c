@@ -30,9 +30,19 @@
 extern struct sys sys;
 
 
-struct partition *ask_for_choice()
+void get_mpoint(char *mpoint)
+{
+ 	printf("Please enter the mount point for the partition. \n");
+ 	printf("We are trying to make the programe behave like unix mounts.\n" \
+	 		 "For Dos/Windows typr the non existent drive letter (like e:)\n"	\
+			  "In UNIX type the mount point (like /mnt/e2fs).");
+	fgets(mpoint, 256, stdin);  
+}
+
+struct partition *ask_for_choice(char *mpoint)
 {
 	char partstr[20];
+	char *tmp;
 	int disk_idx, part_idx, max;
 	struct partition *p;
 again:
@@ -40,7 +50,7 @@ again:
 	printf("Please enter your choice in the form (/dev/hda5) or exit to end\n");
 
 	memset(partstr, 0, 20);
-	scanf("%s", partstr);
+	fgets(partstr, 20, stdin);
 
 	get_choice(partstr, &disk_idx, &part_idx);
 	printf("Choices are %d %d\n", disk_idx, part_idx);
@@ -65,7 +75,12 @@ again:
 			"you can only select Ext2 Partitions");
 		goto again;
 	}
-
+	
+	get_mpoint(mpoint);
+	tmp = strchr(mpoint, '\n');
+	if(tmp)
+		  *tmp = '\0';
+		  
 	sys.current_disk = &sys.dsk[disk_idx];
 	return p;
 }

@@ -66,11 +66,13 @@ void init_root_dir()
 	ext2part.dirbuf = malloc(ext2part.blocksize);
 
 	ext2part.curblock = 0;
+	ext2part.curentry = NULL;
 	
 	read_inode(2, &ext2part.curdir.ino);
 	ext2part.lastblock = ext2part.curdir.ino.i_blocks / (ext2part.blocksize/512);
 
 	ext2part.curdir.inoNum = 2;
+	ext2part.curdir.fileType = FILE_TYPE_DIR;
 	strcpy(ext2part.curdir.fileName, "/");
 
 	ext2part.root = ext2part.curdir;

@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <sys/stat.h>
-//#include <sys/types.h>
+#include <string.h>
 
 
 #include "platform.h"
@@ -61,14 +61,9 @@ void namei_init()
 
 void namei_exit()
 {
-	if(blkbuf.ind)
-		free(blkbuf.ind);
-
-	if(blkbuf.dind)
-		free(blkbuf.dind);
-
-	if(blkbuf.tind)
-		free(blkbuf.tind);
+	free(blkbuf.ind);
+	free(blkbuf.dind);
+	free(blkbuf.tind);
 }
 
 /* Convert file block no to logical block no of partition */
@@ -212,6 +207,33 @@ int enter_new_dir(uint32_t inode, const char *name)
 	return 0;
 }
 
+int ext2_cd(DIRENTRY *entry, const char *name)
+{
+	ext2part.curdir.ino = entry->ino;
+	ext2part.curentry = NULL;
+	ext2part.lastblock = ext2part.curdir.ino.i_blocks / (ext2part.blocksize/512);
+	ext2part.curblock = 0;
+	ext2part.curdir.inoNum = entry->inoNum;
+
+	if(name[0] == '/')
+	{
+		strcpy(ext2part.path, name);
+		return 0;
+	}
+
+	if(!strcmp(name, "."))
+		return 0;
+	else if(!strcmp(name, ".."))
+		remove_last_name(ext2part.path);
+	else
+	{
+		strcat(ext2part.path, name);
+		strcat(ext2part.path, "/");
+	}
+
+	return 0;
+}
+
 #define IS_BUFFER_END(p)	((char *)(p)->curentry >= ((p)->dirbuf + (p)->blocksize))
 
 int get_dir_entry(DIRENTRY *dir)
@@ -219,7 +241,7 @@ int get_dir_entry(DIRENTRY *dir)
 again:
 	if(!ext2part.curentry || IS_BUFFER_END(&ext2part))
 	{
-		if(ext2part.curblock > ext2part.lastblock)
+		if(ext2part.curblock >= ext2part.lastblock)
 			return -1;
 		read_data_block(&ext2part.curdir.ino, ext2part.curblock, ext2part.dirbuf);
 		ext2part.curentry = (EXT2_DIR_ENTRY *)ext2part.dirbuf;
@@ -246,6 +268,23 @@ again:
 	return 0;
 }
 
+int get_direntries(DIRENTRY * entry, DIRENTRY *parent)
+{
+	struct ext2partition saved;
+	int ret;
+
+	saved = ext2part;
+	ext2part.curdir = *parent;
+	ext2part.curentry = NULL;
+	ext2part.lastblock = ext2part.curdir.ino.i_blocks / (ext2part.blocksize/512);
+	ext2part.curblock = 0;
+
+	ret = get_dir_entry(entry);
+	ext2part = saved;
+
+	return ret;
+}
+
 int get_dentry_inode(DIRENTRY *entry, uint32_t inode)
 {
 	int ret;
@@ -266,6 +305,32 @@ int get_dentry_inode(DIRENTRY *entry, uint32_t inode)
 	}while(ret == 0);
 
 	return -1;
+}
+
+int get_direntry_by_name(const char *name, DIRENTRY *curdir, DIRENTRY *out)
+{
+ 	uint32_t inode;
+	int ret = -1;
+	DIRENTRY entry = ext2part.curdir;
+
+	ext2part.curdir = *curdir;
+
+	ext2part.curentry = NULL;
+	ext2part.lastblock = ext2part.curdir.ino.i_blocks / (ext2part.blocksize/512);
+	ext2part.curblock = 0;
+
+	while(get_dir_entry(out) == 0)
+	{
+        if(!strcmp(name, out->fileName))
+        {
+           ret = 0;
+           break;
+	   }
+
+	}
+out:
+    	ext2part.curdir = entry;
+    	return ret;
 }
 
 int save_folder(const char *path, EXT2_INODE *inode)
@@ -358,4 +423,61 @@ err:
 	free(buf);
 	close(fd);
 	return 0;
+}
+
+int path_to_direntry(const char *path, DIRENTRY *entry)
+{
+	int len;
+	char tmppath[256];
+	char *newpath = path;
+	char *last;
+	DIRENTRY parent;
+
+	if(!path)
+	{
+		*entry = ext2part.curdir;
+		return 0;
+	}
+
+	len = strlen(path);
+	if((path[0] == '/') && (len == 1))
+	{
+		*entry = ext2part.root;
+		return 0;
+	}
+
+	if(path[0] == '/')
+	{
+		parent = ext2part.root;
+		newpath = (char *)(path + 1);
+	}
+	else
+		parent = ext2part.curdir;
+
+
+	strcpy(tmppath, newpath);
+	last = strtok(tmppath, "/");
+
+	while(1)
+	{
+		/* handle dot dot */
+ 		if((tmppath[0] == '.') && (tmppath[1] == '.'))
+		{
+			remove_last_name(ext2part.path);
+		}
+
+		if(get_direntry_by_name(tmppath, &parent, entry) < 0)
+		{
+			printf("File or directory \"%s\"not found.\n", path);
+			LOG("File or directory \"%s\"not found.\n", path);
+			return -1;
+		}
+
+		if(!last)
+			return 0;
+
+		newpath += strlen(tmppath);
+		strcpy(tmppath, newpath);
+		last = strtok(tmppath, "/");
+	}
 }

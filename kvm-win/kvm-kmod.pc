@@ -1,0 +1,7 @@
+prefix=PREFIX
+includedir=${prefix}/include/kvm-kmod
+
+Name: kvm-kmod
+Description: KVM modules and headers for older kernels
+Version: VERSION
+Cflags: -I${includedir}

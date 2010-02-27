@@ -44,8 +44,8 @@ OBJ_PATH_KVM = ./virt/kvm/
 OBJ_PATH_ARCH = ./arch/x86/kvm/
 OBJ_PATH_X86 = ./x86/
 
-DRIVER_OBJS = anon_inodes.o external-module-compat.o request-irq-compat.o \
-				srcu.o win-kvm.o win-compat.o
+DRIVER_OBJS =   win-compat.o srcu.o anon_inodes.o win-kvm.o \
+				external-module-compat.o request-irq-compat.o
 				
 DRIVER_OBJS_KVM = assigned-dev.o coalesced_mmio.o  eventfd.o iommu.o \
 				kvm_main.o ioapic.o irq_comm.o

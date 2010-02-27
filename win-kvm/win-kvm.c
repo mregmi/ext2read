@@ -1,5 +1,5 @@
 
-#include <ntddk.h>
+#include <ddk/winddk.h>
 #include <string.h>
 
 #define DEVICE_NAME			L"\\Device\KvmWin"

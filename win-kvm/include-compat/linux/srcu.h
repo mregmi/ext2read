@@ -26,7 +26,7 @@
 
 #ifndef _LINUX_SRCU_H
 #define _LINUX_SRCU_H
-
+/*
 struct srcu_struct_array {
 	int c[2];
 };
@@ -40,14 +40,14 @@ struct srcu_struct {
 #ifndef CONFIG_PREEMPT
 #define srcu_barrier() barrier()
 #else /* #ifndef CONFIG_PREEMPT */
-#define srcu_barrier()
+/*#define srcu_barrier()
 #endif /* #else #ifndef CONFIG_PREEMPT */
-
+/*
 int kvm_init_srcu_struct(struct srcu_struct *sp);
 void kvm_cleanup_srcu_struct(struct srcu_struct *sp);
 int kvm_srcu_read_lock(struct srcu_struct *sp) __acquires(sp);
 void kvm_srcu_read_unlock(struct srcu_struct *sp, int idx) __releases(sp);
 void kvm_synchronize_srcu(struct srcu_struct *sp);
 long kvm_srcu_batches_completed(struct srcu_struct *sp);
-
+*/
 #endif

@@ -17,7 +17,7 @@
 
 CC = gcc
 LD = ld
-MAKE = make
+MAKE = mingw32-make
 CP = cp
 CD = cd
 MV = mv
@@ -35,7 +35,9 @@ DRIVER_TARGET_X64 =$(DRIVER)64.sys
 
 INCLUDES = -I. -I./include-compat/
 
-CFLAGS = -O2 -Wall -mno-cygwin
+C_PREPROC = -DLINUX_VERSION_CODE=0
+
+CFLAGS = -O2 -Wall -mno-cygwin $(C_PREPROC)
 
 DRIVER_LDFLAGS = -s -shared -Wl,--entry,_DriverEntry@8 \
 	-nostartfiles -nostdlib -L. -lntoskrnl -lhal
@@ -44,8 +46,7 @@ OBJ_PATH_KVM = ./virt/kvm/
 OBJ_PATH_ARCH = ./arch/x86/kvm/
 OBJ_PATH_X86 = ./x86/
 
-DRIVER_OBJS =   win-compat.o srcu.o anon_inodes.o win-kvm.o \
-				external-module-compat.o request-irq-compat.o
+DRIVER_OBJS =   win-compat.o win-kvm.o  win-kvm.o 
 				
 DRIVER_OBJS_KVM = assigned-dev.o coalesced_mmio.o  eventfd.o iommu.o \
 				kvm_main.o ioapic.o irq_comm.o

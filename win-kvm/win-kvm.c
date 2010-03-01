@@ -80,5 +80,11 @@ NTSTATUS DriverEntry(
 		IoDeleteDevice(deviceObject);
 	}
 
+#ifdef WINKVM_VMX
+	vmx_init();
+#elif WINKVM_SVM
+	svm_init();
+#endif
+
 	return ntStatus;
 }

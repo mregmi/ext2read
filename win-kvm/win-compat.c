@@ -2,32 +2,22 @@
 #include <ddk/ntddk.h>
 #include "win-compat.h"
 
-static inline unsigned long __get_free_page(int flag)
+struct kmem_cache *kmem_cache_create(const char *name, size_t size, size_t offset, 
+			unsigned long flag, void (*ctor)(void *))
 {
-	return MmAllocateNonCachedMemory(PAGE_SIZE);
+	struct kmem_cache *cache;
+
+	 cache = ExAllocatePoolWithTag(NonPagedPool, sizeof(struct kmem_cache), 'abcd');
+	 if(!cache)
+		 return cache;
+
+	 ExInitializeNPagedLookasideList(&cache->cache, NULL, NULL, 0, size, 'cbda', 0);
+
+	 return cache;
 }
 
-static inline void free_page(unsigned long address)
+void kmem_cache_destroy(struct kmem_cache *cache)
 {
-	MmFreeNonCachedMemory((void *)address, PAGE_SIZE);
-}
-
-static inline void spin_lock(spinlock_t *lock)
-{
-	KeAcquireSpinLock(lock->lock, lock->irql);
-}
-
-static inline void spin_unlock(spinlock_t *lock)
-{
-	KeReleaseSpinLock(lock->lock, lock->irql);
-}
-
-void mutex_lock(mutex_t *lock)
-{
-	ExAcquireFastMutex(lock->lock);
-}
-
-void mutex_unlock(mutex_t *lock)
-{
-	ExReleaseFastMutex(lock->lock);
+	ExDeleteNPagedLookasideList(&cache->cache);
+	ExFreePool(cache);
 }

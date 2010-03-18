@@ -1,0 +1,13 @@
+<RCC>
+    <qresource prefix="/icons/small">
+        <file>icons/small/file.png</file>
+        <file>icons/small/folder.png</file>
+    </qresource>
+    <qresource prefix="/icons/large">
+        <file>icons/large/file.png</file>
+        <file>icons/large/folder.png</file>
+    </qresource>
+    <qresource prefix="/icons/misc">
+        <file>icons/appicon.jpg</file>
+    </qresource>
+</RCC>

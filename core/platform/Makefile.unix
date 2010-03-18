@@ -1,0 +1,30 @@
+#
+# File:- Makefile 
+# written by Manish Regmi (manish_regmi@hotmail.com)
+#
+# Makefile for easy compilation.:-)
+
+
+
+OPTIONS = -Wall -O2
+INCLS = -I. -I../ 
+
+CC = gcc
+AS = as
+LD = ld
+MAKE = make 
+MAKEFILE = -f Makefile.unix
+REMOVE = rm
+
+	
+OBJS = platform_win32.o
+
+all: platform.o
+.c.o:
+	$(CC) -c $(OPTIONS) $(INCLS) $< -o $@
+
+platform.o: $(OBJS)
+	$(LD) -r -o platform.o $(OBJS)
+clear:
+	$(REMOVE) *.c~ *~ *.o
+

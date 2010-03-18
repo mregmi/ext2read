@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual C++ Express 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ext2explore", "ext2explore.vcproj", "{35D7651A-73DC-4255-8F68-542CAD7ADE2D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{35D7651A-73DC-4255-8F68-542CAD7ADE2D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{35D7651A-73DC-4255-8F68-542CAD7ADE2D}.Debug|Win32.Build.0 = Debug|Win32
+		{35D7651A-73DC-4255-8F68-542CAD7ADE2D}.Release|Win32.ActiveCfg = Release|Win32
+		{35D7651A-73DC-4255-8F68-542CAD7ADE2D}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

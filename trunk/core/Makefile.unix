@@ -1,0 +1,50 @@
+#
+# Copyright (C) 2004, 2005	Manish Regmi (regmi dot manish at gmail dot com)
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+ 
+INCL = -I. -I./platform/ -I./ext2/
+OBJS = ./ext2/ext2.o ./platform/platform.o ./lvm/lvm.o partition.o log.o
+OPTIONS = -Wall -O2
+
+LD = ld
+CC = gcc
+COPY = cp
+STRIP = strip
+OBJDUMP = objdump
+MAKE = mingw32-make
+MAKEFILE = Makefile.win32
+REMOVE = del
+
+
+all:
+	$(MAKE) -C platform $(MAKEFILE)
+	$(MAKE) -C ext2 $(MAKEFILE)
+	$(MAKE) -C lvm $(MAKEFILE)
+	$(MAKE) ml 
+
+ml:core.obj
+.c.obj:
+	$(CC) -c $(OPTIONS) $(INCL) $< -o $@
+
+core.obj: $(OBJS)	
+	$(LD) -r -o core.obj $(OBJS)
+	
+clear:
+	$(MAKE) -C platform $(MAKEFILE) clear
+	$(MAKE) -C ext2 $(MAKEFILE) clear
+	$(MAKE) -C lvm $(MAKEFILE) clear
+	$(DEL) *.obj *.c~ *~
+	

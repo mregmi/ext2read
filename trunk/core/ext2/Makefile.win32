@@ -1,0 +1,30 @@
+#
+# File:- Makefile 
+# written by Manish Regmi (manish_regmi@hotmail.com)
+#
+# Makefile for easy compilation.:-)
+
+
+
+OPTIONS = -Wall -O2
+INCLS = -I. -I"../" -I"../platform/" 
+
+CC = gcc
+AS = as
+LD = ld
+MAKE = mingw32-make 
+MAKEFILE = -f Makefile.win32
+REMOVE = del
+
+	
+OBJS = ext2io.obj inode.obj mount.obj namei.obj
+
+all: ext2.obj
+.c.obj:
+	$(CC) -c $(OPTIONS) $(INCLS) $< -o $@
+
+ext2.obj: $(OBJS)
+	$(LD) -r -o ext2.obj $(OBJS)
+clear:
+	$(REMOVE) *.c~ *~ *.obj
+

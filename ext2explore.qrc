@@ -1,0 +1,16 @@
+<RCC>
+    <qresource prefix="/icons" >
+        <file>resource/delete.png</file>
+        <file>resource/editcopy.png</file>
+        <file>resource/editcut.png</file>
+        <file>resource/editpaste.png</file>
+        <file>resource/exit.png</file>
+        <file>resource/filenew.png</file>
+        <file>resource/filesave.png</file>
+        <file>resource/foldernew.png</file>
+        <file>resource/linuxconf.png</file>
+        <file>resource/properties.png</file>
+        <file>resource/rename.png</file>
+        <file>resource/tux.png</file>
+    </qresource>
+</RCC>

@@ -25,4 +25,4 @@ HEADERS += ext2explore.h \
     ext2explore.h \
     partition.h
 FORMS += ext2explore.ui
-RESOURCES += ext2resource.qrc
+RESOURCES += ext2explore.qrc

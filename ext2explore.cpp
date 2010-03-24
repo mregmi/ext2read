@@ -68,3 +68,13 @@ void Ext2Explore::changeEvent(QEvent *e)
         break;
     }
 }
+
+void Ext2Explore::on_action_Exit_triggered()
+{
+    close();
+}
+
+void Ext2Explore::on_actionP_roperties_triggered()
+{
+    property = new Ext2Properties(NULL);
+}

@@ -10,7 +10,8 @@ SOURCES += main.cpp \
     platform_unix.c \
     log.c \
     ext2fs.cpp \
-    lvm.cpp
+    lvm.cpp \
+    ext2properties.cpp
 HEADERS += ext2explore.h \
     ../platform.h \
     ../parttypes.h \
@@ -23,6 +24,8 @@ HEADERS += ext2explore.h \
     ext2read.h \
     ext2fs.h \
     ext2explore.h \
-    partition.h
-FORMS += ext2explore.ui
+    partition.h \
+    ext2properties.h
+FORMS += ext2explore.ui \
+    properties.ui
 RESOURCES += ext2explore.qrc

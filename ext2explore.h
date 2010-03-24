@@ -32,6 +32,7 @@
 #include <QSplitter>
 
 #include "ext2read.h"
+#include "ext2properties.h"
 
 namespace Ui {
     class Ext2Explore;
@@ -48,6 +49,7 @@ protected:
 
 private:
     Ui::Ext2Explore *ui;
+    Ext2Properties *property;
 
     QStandardItemModel *filemodel;
     //QListView *fs_listview;
@@ -55,6 +57,10 @@ private:
     QSplitter *splitter;
 
     Ext2Read *app;
+
+private slots:
+    void on_actionP_roperties_triggered();
+    void on_action_Exit_triggered();
 };
 
 #endif // EXT2EXPLORE_H

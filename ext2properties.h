@@ -10,7 +10,7 @@ class Ext2Properties : public QDialog
 {
      Q_OBJECT
 public:
-    Ext2Properties(Ext2File *file);
+    Ext2Properties(QWidget *parent = 0);
 
 private:
     Ui::PropertiesDialog *properties;

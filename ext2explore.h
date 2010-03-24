@@ -54,7 +54,7 @@ private:
     QStandardItemModel *filemodel;
     //QListView *fs_listview;
     //QTreeView *fs_treeview;
-    QSplitter *splitter;
+    //QSplitter *splitter;
 
     Ext2Read *app;
 

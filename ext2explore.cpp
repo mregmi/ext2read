@@ -28,7 +28,7 @@ Ext2Explore::Ext2Explore(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::Ext2Explore)
 {
-    splitter = new QSplitter(Qt::Horizontal, parent);
+ //   splitter = new QSplitter(Qt::Horizontal, parent);
  //   setCentralWidget(splitter);
 
     filemodel = new QStandardItemModel(this);
@@ -49,7 +49,7 @@ Ext2Explore::Ext2Explore(QWidget *parent) :
 Ext2Explore::~Ext2Explore()
 {
     delete ui;
-    delete splitter;
+   // delete splitter;
     //delete fs_treeview;
     //delete fs_listview;
     delete filemodel;
@@ -76,5 +76,6 @@ void Ext2Explore::on_action_Exit_triggered()
 
 void Ext2Explore::on_actionP_roperties_triggered()
 {
-    property = new Ext2Properties(NULL);
+    property = new Ext2Properties();
+    property->show();
 }

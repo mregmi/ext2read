@@ -145,7 +145,7 @@ class Ext2Partition {
     uint32_t fileblock_to_logical(EXT2_INODE *ino, uint32_t lbn);
     int mount();
 public:
-    Ext2Partition(lloff_t, lloff_t);
+    Ext2Partition(lloff_t, lloff_t, int ssise, FileHandle );
     ~Ext2Partition();
 
     void set_linux_name(const char *, int , int);
@@ -161,7 +161,7 @@ private:
     int ndisks;
 
     list <Ext2Partition *> nparts;
-    int scan_ebr(FileHandle , lloff_t , int , int , int );
+    int scan_ebr(FileHandle , lloff_t , int , int);
     int scan_partitions(char *path, int);
     void clear_partitions();
 

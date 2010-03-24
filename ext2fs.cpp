@@ -27,11 +27,12 @@
 
 #include "ext2read.h"
 
-Ext2Partition::Ext2Partition(lloff_t size, lloff_t offset)
+Ext2Partition::Ext2Partition(lloff_t size, lloff_t offset, int ssize, FileHandle phandle)
 {
     total_sectors = size;
     relative_sect = offset;
-
+    handle = phandle;
+    sect_size = ssize;
     mount();
     inode_buffer = NULL;
 }

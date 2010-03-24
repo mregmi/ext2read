@@ -75,7 +75,7 @@ void Ext2Read::clear_partitions()
 
 
 /* Reads The Extended Partitions */
-int Ext2Read::scan_ebr(FileHandle handle, lloff_t base, int sectsize, int disk, int index)
+int Ext2Read::scan_ebr(FileHandle handle, lloff_t base, int sectsize, int disk)
 {
     unsigned char sector[SECTOR_SIZE];
     struct MBRpartition *part, *part1;
@@ -96,7 +96,7 @@ int Ext2Read::scan_ebr(FileHandle handle, lloff_t base, int sectsize, int disk, 
 
         if(part->sys_ind == EXT2)
         {
-            partition = new Ext2Partition(get_nr_sects(part), get_start_sect(part));
+            partition = new Ext2Partition(get_nr_sects(part), get_start_sect(part), sectsize, handle);
             partition->set_linux_name("/dev/sd", disk, logical);
             nparts.push_back(partition);
         }
@@ -153,7 +153,7 @@ int Ext2Read::scan_partitions(char *path, int diskno)
 
             if(part->sys_ind == EXT2)
             {
-                partition = new Ext2Partition(get_nr_sects(part), get_start_sect(part));
+                partition = new Ext2Partition(get_nr_sects(part), get_start_sect(part), sector_size, handle);
                 partition->set_linux_name("/dev/sd", diskno, i);
                 nparts.push_back(partition);
             }
@@ -164,7 +164,7 @@ int Ext2Read::scan_partitions(char *path, int diskno)
             }
             else if((part->sys_ind == 0x05) || (part->sys_ind == 0x0f))
             {
-                scan_ebr(handle, get_start_sect(part), sector_size,diskno, i);
+                scan_ebr(handle, get_start_sect(part), sector_size,diskno);
             }
         }
     }

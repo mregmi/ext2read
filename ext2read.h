@@ -171,7 +171,7 @@ public:
     ~Ext2Read();
 
     void scan_system();
-    void add_loopback(char *file);
+    void add_loopback(const char *file);
 };
 
 #ifdef __cplusplus
@@ -182,7 +182,7 @@ int read_ext2block(int blocknum, void *buffer);
 int read_data_block(EXT2_INODE *ino, uint32_t lbn, void *buf);
 
 int log_init();
-
+void log_exit();
 int ext2explore_log(const char *msg, ...);
 int ext2explore_log_err(char *file, char *line, const char *buf, ...);
 

@@ -33,6 +33,7 @@
 
 #include "ext2read.h"
 #include "ext2properties.h"
+#include "ext2about.h"
 
 namespace Ui {
     class Ext2Explore;
@@ -49,7 +50,8 @@ protected:
 
 private:
     Ui::Ext2Explore *ui;
-    Ext2Properties *property;
+    Ext2Properties property;
+    Ext2About about;
 
     QStandardItemModel *filemodel;
     //QListView *fs_listview;
@@ -59,6 +61,9 @@ private:
     Ext2Read *app;
 
 private slots:
+    void on_actionOpen_Image_triggered();
+    void on_action_Rescan_System_triggered();
+    void on_action_About_triggered();
     void on_actionP_roperties_triggered();
     void on_action_Exit_triggered();
 };

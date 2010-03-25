@@ -32,7 +32,7 @@ FileHandle open_disk(const char *path, int *sect_size)
                               &junk, // discard count of bytes returned
                               (LPOVERLAPPED) NULL);  // synchronous I/O
 
-    if(dsk.BytesPerSector < SECTOR_SIZE)
+    if((!bResult) || (dsk.BytesPerSector < SECTOR_SIZE))
         *sect_size = SECTOR_SIZE;
     else
         *sect_size = dsk.BytesPerSector;

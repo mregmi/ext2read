@@ -32,7 +32,6 @@
 
 Ext2Read::Ext2Read()
 {
-    log_init();
     scan_system();
 }
 
@@ -91,6 +90,11 @@ int Ext2Read::scan_ebr(FileHandle handle, lloff_t base, int sectsize, int disk)
         if(ret < 0)
             return ret;
 
+        if(ret < sectsize)
+        {
+            LOG("Error Reading the EBR \n");
+            return -1;
+        }
         part = pt_offset(sector, 0);
         LOG("index %d ID %X size %Ld \n", logical, part->sys_ind, get_nr_sects(part));
 
@@ -136,6 +140,11 @@ int Ext2Read::scan_partitions(char *path, int diskno)
     if(ret < 0)
         return ret;
 
+    if(ret < sector_size)
+    {
+        LOG("Error Reading the MBR on %s \n", path);
+        return -1;
+    }
     if(!valid_part_table_flag(sector))
     {
         LOG("Partition Table Error on %s\n", path);
@@ -156,10 +165,12 @@ int Ext2Read::scan_partitions(char *path, int diskno)
                 partition = new Ext2Partition(get_nr_sects(part), get_start_sect(part), sector_size, handle);
                 partition->set_linux_name("/dev/sd", diskno, i);
                 nparts.push_back(partition);
+                LOG("Linux Partition found on disk %d partition %d\n", diskno, i);
             }
 
             if(part->sys_ind == LVM)
             {
+                LOG("LVM Physical Volume found disk %d partition %d\n", diskno, i);
                 scan_lvm(0);
             }
             else if((part->sys_ind == 0x05) || (part->sys_ind == 0x0f))
@@ -172,8 +183,8 @@ int Ext2Read::scan_partitions(char *path, int diskno)
     return 0;
 }
 
-void Ext2Read::add_loopback(char *file)
+void Ext2Read::add_loopback(const char *file)
 {
     ndisks++;
-    scan_partitions(file, ndisks);
+    scan_partitions((char *)file, ndisks);
 }

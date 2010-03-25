@@ -47,4 +47,7 @@ int ext2explore_log(const char *msg, ...)
     return 0;
 }
 
-
+void log_exit()
+{
+    fclose(logfile);
+}

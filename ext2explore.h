@@ -54,11 +54,10 @@ private:
     Ext2About about;
 
     QStandardItemModel *filemodel;
-    //QListView *fs_listview;
-    //QTreeView *fs_treeview;
-    //QSplitter *splitter;
-
+    QStandardItem *root;
     Ext2Read *app;
+
+    void init_root_fs();
 
 private slots:
     void on_actionOpen_Image_triggered();

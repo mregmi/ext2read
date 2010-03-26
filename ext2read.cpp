@@ -72,6 +72,11 @@ void Ext2Read::clear_partitions()
     nparts.clear();
 }
 
+list<Ext2Partition *> Ext2Read::get_partitions()
+{
+    return nparts;
+}
+
 
 /* Reads The Extended Partitions */
 int Ext2Read::scan_ebr(FileHandle handle, lloff_t base, int sectsize, int disk)

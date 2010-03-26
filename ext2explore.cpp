@@ -34,6 +34,10 @@ Ext2Explore::Ext2Explore(QWidget *parent) :
     app = new Ext2Read();
 
     ui->setupUi(this);
+
+    ui->tree->setModel(filemodel);
+    ui->list->setModel(filemodel);
+    root = filemodel->invisibleRootItem();
 }
 
 Ext2Explore::~Ext2Explore()
@@ -41,6 +45,20 @@ Ext2Explore::~Ext2Explore()
     delete ui;
     delete filemodel;
     delete app;
+}
+
+void Ext2Explore::init_root_fs()
+{
+    Ext2Partition *temp;
+    list<Ext2Partition *> parts;
+    list<Ext2Partition *>::iterator i;
+    QStandardItem *item;
+
+    for(i = parts.begin(); i != parts.end(); i++)
+    {
+        temp = (*i);
+        item = new QStandardItem()
+    }
 }
 
 void Ext2Explore::changeEvent(QEvent *e)

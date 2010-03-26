@@ -172,6 +172,7 @@ public:
 
     void scan_system();
     void add_loopback(const char *file);
+    list<Ext2Partition *> get_partitions();
 };
 
 #ifdef __cplusplus

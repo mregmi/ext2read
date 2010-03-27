@@ -116,6 +116,9 @@ typedef struct ext2dirent {
     EXT2_DIR_ENTRY *dirbuf;
 } EXT2DIRENT;
 
+// forward declaration
+class Ext2Partition;
+
 class Ext2File {
 public:
     uint32_t    inode_num;
@@ -123,6 +126,7 @@ public:
     string      file_name;
 
     EXT2_INODE  inode;
+    Ext2Partition *partition;
 };
 
 class Ext2Partition {
@@ -144,11 +148,17 @@ class Ext2Partition {
     int read_data_block(EXT2_INODE *ino, uint32_t lbn, void *buf);
     uint32_t fileblock_to_logical(EXT2_INODE *ino, uint32_t lbn);
     int mount();
+
+public:
+    bool onview;        // flag to determine if it is already added to view.
+
 public:
     Ext2Partition(lloff_t, lloff_t, int ssise, FileHandle );
     ~Ext2Partition();
 
     void set_linux_name(const char *, int , int);
+    string &get_linux_name();
+    Ext2File *get_root() { return root; }
 
     Ext2File *read_inode(uint32_t inum);
     EXT2DIRENT *open_dir(Ext2File *parent);
@@ -171,7 +181,7 @@ public:
     ~Ext2Read();
 
     void scan_system();
-    void add_loopback(const char *file);
+    int add_loopback(const char *file);
     list<Ext2Partition *> get_partitions();
 };
 

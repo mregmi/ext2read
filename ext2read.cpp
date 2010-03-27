@@ -188,8 +188,8 @@ int Ext2Read::scan_partitions(char *path, int diskno)
     return 0;
 }
 
-void Ext2Read::add_loopback(const char *file)
+int Ext2Read::add_loopback(const char *file)
 {
     ndisks++;
-    scan_partitions((char *)file, ndisks);
+    return scan_partitions((char *)file, ndisks);
 }

@@ -33,8 +33,15 @@ Ext2Partition::Ext2Partition(lloff_t size, lloff_t offset, int ssize, FileHandle
     relative_sect = offset;
     handle = phandle;
     sect_size = ssize;
+    onview = false;
     mount();
     inode_buffer = NULL;
+
+    root = read_inode(EXT2_ROOT_INO);
+    if(!root)
+    {
+        LOG("Cannot read the root of %s \n", linux_name.c_str());
+    }
 }
 
 Ext2Partition::~Ext2Partition()
@@ -51,6 +58,11 @@ void Ext2Partition::set_linux_name(const char *name, int disk, int partition)
     linux_name = name;
     linux_name.append(1, dchar);
     linux_name.append(1, pchar);
+}
+
+string &Ext2Partition::get_linux_name()
+{
+    return linux_name;
 }
 
 int Ext2Partition::ext2_readblock(int blocknum, void *buffer)
@@ -122,6 +134,29 @@ EXT2DIRENT *Ext2Partition::open_dir(Ext2File *parent)
     return dirent;
 }
 
+Ext2File *Ext2Partition::read_dir(EXT2DIRENT *dirent)
+{
+    Ext2File *newEntry;
+
+    if(!dirent)
+        return NULL;
+    if(!dirent->dirbuf)
+    {
+        dirent->dirbuf = (EXT2_DIR_ENTRY *) new char[blocksize];
+        if(!dirent->dirbuf)
+            return NULL;
+    }
+
+    if(!dirent->next)
+        dirent->next = dirent->dirbuf;
+}
+
+void Ext2Partition::close_dir(EXT2DIRENT *dirent)
+{
+    delete [] dirent->dirbuf;
+    delete dirent;
+}
+
 Ext2File *Ext2Partition::read_inode(uint32_t inum)
 {
     uint32_t group, index, blknum;
@@ -134,6 +169,8 @@ Ext2File *Ext2Partition::read_inode(uint32_t inum)
     if(!inode_buffer)
     {
         inode_buffer = new char[blocksize];
+        if(!inode_buffer)
+            return NULL;
     }
 
     group = (inum - 1) / inodes_per_group;

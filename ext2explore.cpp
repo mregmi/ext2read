@@ -38,6 +38,11 @@ Ext2Explore::Ext2Explore(QWidget *parent) :
     ui->tree->setModel(filemodel);
     ui->list->setModel(filemodel);
     root = filemodel->invisibleRootItem();
+    init_root_fs();
+
+    connect(ui->tree, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(on_action_item_dbclicked(QModelIndex)));
+    connect(ui->list, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(on_action_item_dbclicked(QModelIndex)));
+
 }
 
 Ext2Explore::~Ext2Explore()
@@ -54,10 +59,28 @@ void Ext2Explore::init_root_fs()
     list<Ext2Partition *>::iterator i;
     QStandardItem *item;
 
+    parts = app->get_partitions();
     for(i = parts.begin(); i != parts.end(); i++)
     {
         temp = (*i);
-        item = new QStandardItem()
+
+        // check if itis already in the view
+        if(temp->onview)
+            continue;
+
+        item = new QStandardItem(QIcon(":/resource/foldernew.png"),
+                                 QString(temp->get_linux_name().c_str()));
+        if(!temp->get_root())
+        {
+            LOG("Root folder for %s is invalid. \n", temp->get_linux_name().c_str());
+            delete item;
+            continue;
+        }
+
+        item->setData(QVariant(QMetaType::VoidStar, temp), Qt::UserRole);
+        root->appendRow(item);
+
+        temp->onview = true;
     }
 }
 
@@ -97,11 +120,47 @@ void Ext2Explore::on_action_Rescan_System_triggered()
 
 void Ext2Explore::on_actionOpen_Image_triggered()
 {
+    int result;
     QString filename;
 
     filename = QFileDialog::getOpenFileName(this,
          tr("Open Disk Image"), "", tr("All Disk Image Files (*)"));
     //LOG("Opening file %s as a disk image. \n", filename.toAscii());
 
-    app->add_loopback(filename.toAscii());
+    result = app->add_loopback(filename.toAscii());
+    if(result <= 0)
+    {
+        LOG("No valid Ext2 Partitions found in the disk image.");
+        return;
+    }
+
+    init_root_fs();
+}
+
+void Ext2Explore::on_action_item_dbclicked(const QModelIndex &index)
+{
+    QStandardItem *children;
+    QStandardItem *parentItem;
+    Ext2File *parentFile;
+    Ext2File *files;
+    QVariant fileData;
+    EXT2DIRENT *dir;
+    Ext2Partition *part;
+
+
+    parentItem = filemodel->itemFromIndex(index);
+    fileData = parentItem->data(Qt::UserRole);
+    parentFile = static_cast<Ext2File *>(fileData.data());
+    part = parentFile->partition;
+
+    dir = part->open_dir(parentFile);
+
+    while((files = part->read_dir(dir)) != NULL)
+    {
+        children = new QStandardItem(QIcon(":/resource/foldernew.png"),
+                                 QString(part->get_linux_name().c_str()));
+
+        children->setData(QVariant(QMetaType::VoidStar, files), Qt::UserRole);
+        parentItem->appendRow(children);
+    }
 }

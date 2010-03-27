@@ -105,7 +105,7 @@ int Ext2Read::scan_ebr(FileHandle handle, lloff_t base, int sectsize, int disk)
 
         if(part->sys_ind == EXT2)
         {
-            partition = new Ext2Partition(get_nr_sects(part), get_start_sect(part), sectsize, handle);
+            partition = new Ext2Partition(get_nr_sects(part), get_start_sect(part)+ ebrBase + ebr2, sectsize, handle);
             partition->set_linux_name("/dev/sd", disk, logical);
             nparts.push_back(partition);
         }
@@ -180,7 +180,7 @@ int Ext2Read::scan_partitions(char *path, int diskno)
             }
             else if((part->sys_ind == 0x05) || (part->sys_ind == 0x0f))
             {
-                scan_ebr(handle, get_start_sect(part), sector_size,diskno);
+                scan_ebr(handle, get_start_sect(part), sector_size, diskno);
             }
         }
     }

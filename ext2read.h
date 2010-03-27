@@ -73,6 +73,7 @@
 #define EXT2_S_IWOTH			0x0002
 #define EXT2_S_IXOTH			0x0001
 
+#define IS_BUFFER_END(p, q, bsize)	(((char *)(p)) >= ((char *)(q) + bsize))
 
 using namespace std;
 
@@ -111,11 +112,6 @@ static INLINE char *get_access(unsigned long mode)
 	return acc;
 }
 
-typedef struct ext2dirent {
-    EXT2_DIR_ENTRY *next;
-    EXT2_DIR_ENTRY *dirbuf;
-} EXT2DIRENT;
-
 // forward declaration
 class Ext2Partition;
 
@@ -128,6 +124,12 @@ public:
     EXT2_INODE  inode;
     Ext2Partition *partition;
 };
+
+typedef struct ext2dirent {
+    EXT2_DIR_ENTRY *next;
+    EXT2_DIR_ENTRY *dirbuf;
+    Ext2File *parent;
+} EXT2DIRENT;
 
 class Ext2Partition {
     FileHandle  handle;

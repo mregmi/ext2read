@@ -44,6 +44,7 @@ int ext2explore_log(const char *msg, ...)
     va_end(ap);
 
     fprintf(logfile, "%s", buff);
+    fflush(logfile);
     return 0;
 }
 

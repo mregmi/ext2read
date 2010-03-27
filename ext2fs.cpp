@@ -29,13 +29,17 @@
 
 Ext2Partition::Ext2Partition(lloff_t size, lloff_t offset, int ssize, FileHandle phandle)
 {
+    int ret;
+
     total_sectors = size;
     relative_sect = offset;
     handle = phandle;
     sect_size = ssize;
     onview = false;
-    mount();
     inode_buffer = NULL;
+    ret = mount();
+    if(ret < 0)
+        return;
 
     root = read_inode(EXT2_ROOT_INO);
     if(!root)
@@ -52,7 +56,7 @@ Ext2Partition::~Ext2Partition()
 void Ext2Partition::set_linux_name(const char *name, int disk, int partition)
 {
     char dchar = 'a' + disk;
-    char pchar = '0' + partition;
+    char pchar = '1' + partition;
 
 
     linux_name = name;
@@ -91,6 +95,7 @@ int Ext2Partition::mount()
     inodes_per_group = EXT2_INODES_PER_GROUP(&sblock);
     inode_size = EXT2_INODE_SIZE(&sblock);
 
+    LOG("Block size %d, inp %d, inodesize %d\n", blocksize, inodes_per_group, inode_size);
     totalGroups = (sblock.s_blocks_count)/EXT2_BLOCKS_PER_GROUP(&sblock);
     gSizeb = (sizeof(EXT2_GROUP_DESC) * totalGroups);
     gSizes = (gSizeb / sect_size)+1;
@@ -130,6 +135,7 @@ EXT2DIRENT *Ext2Partition::open_dir(Ext2File *parent)
         return NULL;
 
     dirent = new EXT2DIRENT;
+    dirent->parent = parent;
 
     return dirent;
 }
@@ -137,6 +143,7 @@ EXT2DIRENT *Ext2Partition::open_dir(Ext2File *parent)
 Ext2File *Ext2Partition::read_dir(EXT2DIRENT *dirent)
 {
     Ext2File *newEntry;
+    char *pos;
 
     if(!dirent)
         return NULL;
@@ -145,10 +152,28 @@ Ext2File *Ext2Partition::read_dir(EXT2DIRENT *dirent)
         dirent->dirbuf = (EXT2_DIR_ENTRY *) new char[blocksize];
         if(!dirent->dirbuf)
             return NULL;
+        read_data_block(&dirent->parent->inode, 0, dirent->dirbuf);
     }
 
     if(!dirent->next)
         dirent->next = dirent->dirbuf;
+    else
+    {
+        pos = (char *) dirent->next;
+        dirent->next = (EXT2_DIR_ENTRY *)(pos + dirent->next->rec_len);
+        if(IS_BUFFER_END(dirent->next, dirent->dirbuf, blocksize))
+        {
+            dirent->next = NULL;
+            delete [] dirent->dirbuf;
+
+            return NULL;
+        }
+    }
+
+    newEntry = read_inode(dirent->next->inode);
+    newEntry->file_type = dirent->next->filetype;
+
+    return newEntry;
 }
 
 void Ext2Partition::close_dir(EXT2DIRENT *dirent)
@@ -161,14 +186,15 @@ Ext2File *Ext2Partition::read_inode(uint32_t inum)
 {
     uint32_t group, index, blknum;
     int inode_index, ret = 0;
-    Ext2File *file;
+    Ext2File *file = NULL;
+    EXT2_INODE *src;
 
     if(inum == 0)
         return NULL;
 
     if(!inode_buffer)
     {
-        inode_buffer = new char[blocksize];
+        inode_buffer = (char *)malloc(blocksize);
         if(!inode_buffer)
             return NULL;
     }
@@ -178,12 +204,22 @@ Ext2File *Ext2Partition::read_inode(uint32_t inum)
     inode_index = (index % blocksize);
     blknum = desc[group].bg_inode_table + (index / blocksize);
 
+
     if(blknum != last_block)
         ret = ext2_readblock(blknum, inode_buffer);
 
     file = new Ext2File;
-    memcpy(&file->inode, inode_buffer + inode_index, inode_size);
+    if(!file)
+    {
+        return NULL;
+    }
+    src = (EXT2_INODE *)(inode_buffer + inode_index);
+    file->inode = *src;
+
+    //LOG("BLKNUM is %d, inode_index %d\n", file->inode.i_size, inode_index);
     file->inode_num = inum;
+    file->partition = this;
+
     last_block = blknum;
 
     return file;

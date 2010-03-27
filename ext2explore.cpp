@@ -37,11 +37,17 @@ Ext2Explore::Ext2Explore(QWidget *parent) :
 
     ui->tree->setModel(filemodel);
     ui->list->setModel(filemodel);
+    ui->list->setViewMode(QListView::IconMode);
+    ui->tree->header()->hide();
+    ui->list->setIconSize(QSize(40,30));
     root = filemodel->invisibleRootItem();
+
+    this->setContextMenuPolicy(Qt::CustomContextMenu);
     init_root_fs();
 
     connect(ui->tree, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(on_action_item_dbclicked(QModelIndex)));
     connect(ui->list, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(on_action_item_dbclicked(QModelIndex)));
+    connect(this, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(ext2_context_menu(const QPoint &)));
 
 }
 
@@ -68,7 +74,7 @@ void Ext2Explore::init_root_fs()
         if(temp->onview)
             continue;
 
-        item = new QStandardItem(QIcon(":/resource/foldernew.png"),
+        item = new QStandardItem(QIcon(":/icons/resource/foldernew.png"),
                                  QString(temp->get_linux_name().c_str()));
         if(!temp->get_root())
         {
@@ -78,6 +84,7 @@ void Ext2Explore::init_root_fs()
         }
 
         item->setData(QVariant(QMetaType::VoidStar, temp), Qt::UserRole);
+        item->setEditable(false);
         root->appendRow(item);
 
         temp->onview = true;
@@ -147,20 +154,39 @@ void Ext2Explore::on_action_item_dbclicked(const QModelIndex &index)
     EXT2DIRENT *dir;
     Ext2Partition *part;
 
-
+    LOG("Double  click Detected at start");
     parentItem = filemodel->itemFromIndex(index);
     fileData = parentItem->data(Qt::UserRole);
     parentFile = static_cast<Ext2File *>(fileData.data());
     part = parentFile->partition;
 
     dir = part->open_dir(parentFile);
-
+    LOG("Opened file\n");
     while((files = part->read_dir(dir)) != NULL)
     {
-        children = new QStandardItem(QIcon(":/resource/foldernew.png"),
+        children = new QStandardItem(QIcon(":/icons/resource/foldernew.png"),
                                  QString(part->get_linux_name().c_str()));
 
         children->setData(QVariant(QMetaType::VoidStar, files), Qt::UserRole);
+        children->setEditable(false);
         parentItem->appendRow(children);
     }
+}
+
+void Ext2Explore::ext2_context_menu(const QPoint &point)
+{
+    QMenu menu(ui->splitter);
+
+    menu.addAction(ui->action_Save);
+    menu.addSeparator();
+    menu.addAction(ui->actionCut);
+    menu.addAction(ui->actionC_opy);
+    menu.addAction(ui->actionPaste);
+    menu.addSeparator();
+    menu.addAction(ui->actionRename);
+    menu.addAction(ui->actionDelete);
+    menu.addSeparator();
+    menu.addAction(ui->actionP_roperties);
+
+    menu.exec(this->mapToGlobal(point));
 }

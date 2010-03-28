@@ -160,7 +160,7 @@ void Ext2Explore::on_action_item_dbclicked(const QModelIndex &index)
     fileData = parentItem->data(Qt::UserRole);
     parentFile = (Ext2File *) fileData.value<void *>();
 
-    if(parentFile->inview)
+    if(parentFile->onview)
         return;
 
     part = parentFile->partition;
@@ -169,14 +169,14 @@ void Ext2Explore::on_action_item_dbclicked(const QModelIndex &index)
     dir = part->open_dir(parentFile);
     while((files = part->read_dir(dir)) != NULL)
     {
-        LOG("Found File %s\n", files->file_name.c_str());
+        LOG("Found File %s inode %d \n", files->file_name.c_str(), files->inode_num);
         children = new QStandardItem(QIcon(":/icons/resource/foldernew.png"),
                                  QString(files->file_name.c_str()));
 
         children->setData(qVariantFromValue((void *)files), Qt::UserRole);
         children->setEditable(false);
         parentItem->appendRow(children);
-        parentFile->inview = true;
+        parentFile->onview = true;
     }
 
     part->close_dir(dir);

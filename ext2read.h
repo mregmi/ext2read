@@ -123,7 +123,16 @@ public:
 
     EXT2_INODE  inode;
     Ext2Partition *partition;
-    bool inview;
+    bool onview;
+};
+
+struct block_hint {
+    uint32_t *ind;
+    uint32_t *dind;
+    uint32_t *tind;
+    uint32_t ind_hint;
+    uint32_t dind_hint;
+    uint32_t tind_hint;
 };
 
 typedef struct ext2dirent {
@@ -142,19 +151,22 @@ class Ext2Partition {
     int inodes_per_group;
     int inode_size;
     int blocksize;
-    int totalGroups;
+    uint32_t totalGroups;
     EXT2_GROUP_DESC *desc;
     char *inode_buffer;         // buffer to cache last used block of inodes
-    uint32_t last_block;          // block number of the last inode block read
+    lloff_t last_block;          // block number of the last inode block read
     Ext2File *root;
+    struct block_hint hint;
 
-    int ext2_readblock(int blocknum, void *buffer);
-    int read_data_block(EXT2_INODE *ino, uint32_t lbn, void *buf);
+    int ext2_readblock(lloff_t blocknum, void *buffer);
+    int read_data_block(EXT2_INODE *ino, lloff_t lbn, void *buf);
     uint32_t fileblock_to_logical(EXT2_INODE *ino, uint32_t lbn);
+    lloff_t extent_to_logical(EXT2_INODE *ino, lloff_t lbn);
     int mount();
 
 public:
     bool onview;        // flag to determine if it is already added to view.
+    bool has_extent;    // flag to determine if this FS use Ext4 Extents
 
 public:
     Ext2Partition(lloff_t, lloff_t, int ssise, FileHandle );
@@ -192,9 +204,6 @@ public:
 #ifdef __cplusplus
 extern "C"{
 #endif
-
-int read_ext2block(int blocknum, void *buffer);
-int read_data_block(EXT2_INODE *ino, uint32_t lbn, void *buf);
 
 int log_init();
 void log_exit();

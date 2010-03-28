@@ -37,6 +37,8 @@ Ext2Partition::Ext2Partition(lloff_t size, lloff_t offset, int ssize, FileHandle
     sect_size = ssize;
     onview = false;
     inode_buffer = NULL;
+    hint.dind = hint.ind = NULL;
+    hint.ind_hint = hint.dind_hint = 0;
     ret = mount();
     if(ret < 0)
         return;
@@ -73,10 +75,10 @@ string &Ext2Partition::get_linux_name()
     return linux_name;
 }
 
-int Ext2Partition::ext2_readblock(int blocknum, void *buffer)
+int Ext2Partition::ext2_readblock(lloff_t blocknum, void *buffer)
 {
         int nsects = blocksize/sect_size;
-        lloff_t sectno = (lloff_t)((blocksize/sect_size) * blocknum) + relative_sect;
+        lloff_t sectno = (lloff_t)((lloff_t)(blocksize/sect_size) * blocknum) + relative_sect;
 
         return read_disk(handle, buffer, sectno, nsects, sect_size);
 }
@@ -175,7 +177,10 @@ Ext2File *Ext2Partition::read_dir(EXT2DIRENT *dirent)
 
     newEntry = read_inode(dirent->next->inode);
     if(!newEntry)
+    {
+        LOG("Error reading Inode %d parent inode %d.\n", dirent->next->inode, dirent->parent->inode_num);
         return NULL;
+    }
 
     newEntry->file_type = dirent->next->filetype;
     newEntry->file_name.assign(dirent->next->name, dirent->next->name_len);
@@ -234,7 +239,7 @@ Ext2File *Ext2Partition::read_inode(uint32_t inum)
     //LOG("BLKNUM is %d, inode_index %d\n", file->inode.i_size, inode_index);
     file->inode_num = inum;
     file->partition = (Ext2Partition *)this;
-    file->inview = false;
+    file->onview = false;
 
     last_block = blknum;
 
@@ -242,13 +247,27 @@ Ext2File *Ext2Partition::read_inode(uint32_t inum)
 }
 
 
-int Ext2Partition::read_data_block(EXT2_INODE *ino, uint32_t lbn, void *buf)
+int Ext2Partition::read_data_block(EXT2_INODE *ino, lloff_t lbn, void *buf)
 {
-        uint32_t block;
+        lloff_t block;
 
-        block = fileblock_to_logical(ino, lbn);
+        if(has_extent)
+            block = extent_to_logical(ino, lbn);
+        else
+            block = fileblock_to_logical(ino, lbn);
+
+        if(block == 0)
+            return -1;
 
         return ext2_readblock(block, buf);
+}
+
+lloff_t Ext2Partition::extent_to_logical(EXT2_INODE *ino, lloff_t lbn)
+{
+    struct ext4_extent_header *header;
+    lloff_t block;
+
+
 }
 
 uint32_t Ext2Partition::fileblock_to_logical(EXT2_INODE *ino, uint32_t lbn)
@@ -261,61 +280,88 @@ uint32_t Ext2Partition::fileblock_to_logical(EXT2_INODE *ino, uint32_t lbn)
             return ino->i_block[lbn];
     }
 
-    sz = blocksize/4;
+    sz = blocksize / sizeof(uint32_t);
     indlast = sz + EXT2_NDIR_BLOCKS;
 
-/*    if((lbn >= EXT2_NDIR_BLOCKS) && (lbn < indlast))
+    if((lbn >= EXT2_NDIR_BLOCKS) && (lbn < indlast))
     {
             block = ino->i_block[EXT2_IND_BLOCK];
-            ext2_readblock(block, blkbuf.ind);
+            if(hint.ind_hint != block)
+            {
+                if(!hint.ind)
+                {
+                    hint.ind = (uint32_t *) new char [blocksize];
+                    if(!hint.ind)
+                        return 0;
+                }
+                ext2_readblock(block, hint.ind);
+                hint.ind_hint = block;
+            }
 
             lbn -= EXT2_NDIR_BLOCKS;
-            return blkbuf.ind[lbn];
+            return hint.ind[lbn];
     }
 
     dindlast = (sz * sz) + indlast;
     if((lbn >= indlast) && (lbn < dindlast))
     {
             block = ino->i_block[EXT2_DIND_BLOCK];
-            read_ext2block(block, blkbuf.dind);
-            tmpblk = lbn - indlast;
-            block = blkbuf.dind[tmpblk/sz];
-            if(block != blkbuf.indblk)
+            if(hint.dind_hint != block)
             {
-                    blkbuf.indblk = block;
-                    read_ext2block(block, blkbuf.ind);
+                if(!hint.dind)
+                {
+                    hint.dind = (uint32_t *) new char [blocksize];
+                    if(!hint.ind)
+                        return 0;
+                }
+                ext2_readblock(block, hint.dind);
+                hint.dind_hint = block;
             }
-            lbn = tmpblk%sz;
-            return blkbuf.ind[lbn];
+
+            tmpblk = lbn - indlast;
+            block = hint.dind[tmpblk/sz];
+            if(block != hint.ind_hint)
+            {
+                hint.ind_hint = block;
+                ext2_readblock(block, hint.ind);
+            }
+            lbn = tmpblk % sz;
+            return hint.ind[lbn];
     }
 
     ///tindlast = (sz * sz * sz) + dindlast;
     if(lbn >= dindlast)
     {
             block = ino->i_block[EXT2_TIND_BLOCK];
-            if(block != blkbuf.tindblk)
+            if(block != hint.tind_hint)
             {
-                    blkbuf.dindblk = block;
-                    read_ext2block(block, blkbuf.tind);
+                if(!hint.tind)
+                {
+                    hint.tind = (uint32_t *) new char [blocksize];
+                    if(!hint.tind)
+                        return 0;
+                }
+                hint.tind_hint = block;
+                ext2_readblock(block, hint.tind);
             }
 
             tmpblk = lbn - dindlast;
-            block = blkbuf.tind[tmpblk/(sz * sz)];
-            if(block != blkbuf.dindblk)
+            block = hint.tind[tmpblk/(sz * sz)];
+            if(block != hint.dind_hint)
             {
-                    blkbuf.dindblk = block;
-                    read_ext2block(block, blkbuf.dind);
+                    hint.dind_hint = block;
+                    ext2_readblock(block, hint.dind);
             }
             block = tmpblk / sz;
             lbn = tmpblk % sz;
-            block = blkbuf.dind[block];
-            if(block != blkbuf.indblk)
+            block = hint.dind[block];
+            if(block != hint.ind_hint)
             {
-                    blkbuf.indblk = block;
-                    read_ext2block(block, blkbuf.ind);
+                    hint.ind_hint = block;
+                    ext2_readblock(block, hint.ind);
             }
-            return blkbuf.ind[lbn];
+            return hint.ind[lbn];
     }
-*/
+
     return 0;
 }

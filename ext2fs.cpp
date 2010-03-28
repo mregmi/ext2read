@@ -45,7 +45,11 @@ Ext2Partition::Ext2Partition(lloff_t size, lloff_t offset, int ssize, FileHandle
     if(!root)
     {
         LOG("Cannot read the root of %s \n", linux_name.c_str());
+        return;
     }
+
+   root->file_name = linux_name;
+   root->file_type = 0x02;   //FIXME: do not hardcode
 }
 
 Ext2Partition::~Ext2Partition()
@@ -80,7 +84,6 @@ int Ext2Partition::ext2_readblock(int blocknum, void *buffer)
 int Ext2Partition::mount()
 {
     EXT2_SUPER_BLOCK sblock;
-    int totalGroups;
     int gSizes, gSizeb;		/* Size of total group desc in sectors */
     char *tmpbuf;
 
@@ -136,6 +139,8 @@ EXT2DIRENT *Ext2Partition::open_dir(Ext2File *parent)
 
     dirent = new EXT2DIRENT;
     dirent->parent = parent;
+    dirent->next = NULL;
+    dirent->dirbuf = NULL;
 
     return dirent;
 }
@@ -164,14 +169,16 @@ Ext2File *Ext2Partition::read_dir(EXT2DIRENT *dirent)
         if(IS_BUFFER_END(dirent->next, dirent->dirbuf, blocksize))
         {
             dirent->next = NULL;
-            delete [] dirent->dirbuf;
-
             return NULL;
         }
     }
 
     newEntry = read_inode(dirent->next->inode);
+    if(!newEntry)
+        return NULL;
+
     newEntry->file_type = dirent->next->filetype;
+    newEntry->file_name.assign(dirent->next->name, dirent->next->name_len);
 
     return newEntry;
 }
@@ -200,6 +207,13 @@ Ext2File *Ext2Partition::read_inode(uint32_t inum)
     }
 
     group = (inum - 1) / inodes_per_group;
+
+    if(group > totalGroups)
+    {
+        LOG("Error Reading Inode %X. Invalid Inode Number\n", inum);
+        return NULL;
+    }
+
     index = ((inum - 1) % inodes_per_group) * inode_size;
     inode_index = (index % blocksize);
     blknum = desc[group].bg_inode_table + (index / blocksize);
@@ -211,6 +225,7 @@ Ext2File *Ext2Partition::read_inode(uint32_t inum)
     file = new Ext2File;
     if(!file)
     {
+        LOG("Allocation of File Failed. \n");
         return NULL;
     }
     src = (EXT2_INODE *)(inode_buffer + inode_index);
@@ -218,12 +233,14 @@ Ext2File *Ext2Partition::read_inode(uint32_t inum)
 
     //LOG("BLKNUM is %d, inode_index %d\n", file->inode.i_size, inode_index);
     file->inode_num = inum;
-    file->partition = this;
+    file->partition = (Ext2Partition *)this;
+    file->inview = false;
 
     last_block = blknum;
 
     return file;
 }
+
 
 int Ext2Partition::read_data_block(EXT2_INODE *ino, uint32_t lbn, void *buf)
 {

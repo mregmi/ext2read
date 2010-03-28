@@ -123,6 +123,7 @@ public:
 
     EXT2_INODE  inode;
     Ext2Partition *partition;
+    bool inview;
 };
 
 typedef struct ext2dirent {
@@ -141,6 +142,7 @@ class Ext2Partition {
     int inodes_per_group;
     int inode_size;
     int blocksize;
+    int totalGroups;
     EXT2_GROUP_DESC *desc;
     char *inode_buffer;         // buffer to cache last used block of inodes
     uint32_t last_block;          // block number of the last inode block read

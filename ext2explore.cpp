@@ -45,8 +45,8 @@ Ext2Explore::Ext2Explore(QWidget *parent) :
     this->setContextMenuPolicy(Qt::CustomContextMenu);
     init_root_fs();
 
-    connect(ui->tree, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(on_action_item_dbclicked(QModelIndex)));
-    connect(ui->list, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(on_action_item_dbclicked(QModelIndex)));
+    connect(ui->tree, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(on_action_item_dbclicked(const QModelIndex &)));
+    connect(ui->list, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(on_action_item_dbclicked(const QModelIndex &)));
     connect(this, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(ext2_context_menu(const QPoint &)));
 
 }
@@ -64,6 +64,7 @@ void Ext2Explore::init_root_fs()
     list<Ext2Partition *> parts;
     list<Ext2Partition *>::iterator i;
     QStandardItem *item;
+    void *ptr;
 
     parts = app->get_partitions();
     for(i = parts.begin(); i != parts.end(); i++)
@@ -83,7 +84,8 @@ void Ext2Explore::init_root_fs()
             continue;
         }
 
-        item->setData(QVariant(QMetaType::VoidStar, temp), Qt::UserRole);
+        ptr = temp->get_root();
+        item->setData(qVariantFromValue(ptr), Qt::UserRole);
         item->setEditable(false);
         root->appendRow(item);
 
@@ -154,23 +156,30 @@ void Ext2Explore::on_action_item_dbclicked(const QModelIndex &index)
     EXT2DIRENT *dir;
     Ext2Partition *part;
 
-    LOG("Double  click Detected at start");
     parentItem = filemodel->itemFromIndex(index);
     fileData = parentItem->data(Qt::UserRole);
-    parentFile = static_cast<Ext2File *>(fileData.data());
+    parentFile = (Ext2File *) fileData.value<void *>();
+
+    if(parentFile->inview)
+        return;
+
     part = parentFile->partition;
 
+    LOG("Opened file %s\n",parentFile->file_name.c_str());
     dir = part->open_dir(parentFile);
-    LOG("Opened file\n");
     while((files = part->read_dir(dir)) != NULL)
     {
+        LOG("Found File %s\n", files->file_name.c_str());
         children = new QStandardItem(QIcon(":/icons/resource/foldernew.png"),
-                                 QString(part->get_linux_name().c_str()));
+                                 QString(files->file_name.c_str()));
 
-        children->setData(QVariant(QMetaType::VoidStar, files), Qt::UserRole);
+        children->setData(qVariantFromValue((void *)files), Qt::UserRole);
         children->setEditable(false);
         parentItem->appendRow(children);
+        parentFile->inview = true;
     }
+
+    part->close_dir(dir);
 }
 
 void Ext2Explore::ext2_context_menu(const QPoint &point)

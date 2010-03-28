@@ -75,7 +75,7 @@ void Ext2Explore::init_root_fs()
         if(temp->onview)
             continue;
 
-        item = new QStandardItem(QIcon(":/icons/resource/foldernew.png"),
+        item = new QStandardItem(QIcon(":/icons/resource/disk.png"),
                                  QString(temp->get_linux_name().c_str()));
         if(!temp->get_root())
         {
@@ -170,8 +170,16 @@ void Ext2Explore::on_action_item_dbclicked(const QModelIndex &index)
     while((files = part->read_dir(dir)) != NULL)
     {
         LOG("Found File %s inode %d \n", files->file_name.c_str(), files->inode_num);
-        children = new QStandardItem(QIcon(":/icons/resource/foldernew.png"),
+        if( EXT2_S_ISDIR(files->inode.i_mode))
+        {
+            children = new QStandardItem(QIcon(":/icons/resource/file_folder.png"),
                                  QString(files->file_name.c_str()));
+        }
+        else
+        {
+            children = new QStandardItem(QIcon(":/icons/resource/file_unknown.png"),
+                                 QString(files->file_name.c_str()));
+        }
 
         children->setData(qVariantFromValue((void *)files), Qt::UserRole);
         children->setEditable(false);

@@ -1,5 +1,5 @@
 <RCC>
-    <qresource prefix="/icons" >
+    <qresource prefix="/icons">
         <file>resource/delete.png</file>
         <file>resource/editcopy.png</file>
         <file>resource/editcut.png</file>
@@ -12,5 +12,8 @@
         <file>resource/properties.png</file>
         <file>resource/rename.png</file>
         <file>resource/tux.png</file>
+        <file>resource/disk.png</file>
+        <file>resource/file_folder.png</file>
+        <file>resource/file_unknown.png</file>
     </qresource>
 </RCC>

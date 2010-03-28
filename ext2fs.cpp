@@ -3,7 +3,7 @@
  * File: partition.cpp
  **/
 /**
- * Copyright (C) 2005 by Manish Regmi   (regmi dot manish at gmail.com)
+ * Copyright (C) 2005 2010 by Manish Regmi   (regmi dot manish at gmail.com)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,6 +39,7 @@ Ext2Partition::Ext2Partition(lloff_t size, lloff_t offset, int ssize, FileHandle
     inode_buffer = NULL;
     hint.dind = hint.ind = NULL;
     hint.ind_hint = hint.dind_hint = 0;
+    //has_extent = 1;
     ret = mount();
     if(ret < 0)
         return;
@@ -249,9 +250,9 @@ Ext2File *Ext2Partition::read_inode(uint32_t inum)
 
 int Ext2Partition::read_data_block(EXT2_INODE *ino, lloff_t lbn, void *buf)
 {
-        lloff_t block;
+    lloff_t block;
 
-        if(has_extent)
+        if(INODE_HAS_EXTENT(ino))
             block = extent_to_logical(ino, lbn);
         else
             block = fileblock_to_logical(ino, lbn);
@@ -265,9 +266,32 @@ int Ext2Partition::read_data_block(EXT2_INODE *ino, lloff_t lbn, void *buf)
 lloff_t Ext2Partition::extent_to_logical(EXT2_INODE *ino, lloff_t lbn)
 {
     struct ext4_extent_header *header;
-    lloff_t block;
+    struct ext4_extent *extent;
 
+    lloff_t block = 0;
 
+    header  = get_ext4_header(ino);
+    if(header->eh_magic != EXT4_EXT_MAGIC)
+    {
+        LOG("Invalid magic in Extent Header: %X\n", header->eh_magic);
+        return 0;
+    }
+    extent = EXT_FIRST_EXTENT(header);
+    if(header->eh_depth == 0)
+    {
+        for(int i = 0; i < header->eh_entries; i++)
+        {
+            extent = extent + i;
+            if((lbn >= extent->ee_block) &&
+               (lbn < (extent->ee_block + extent->ee_len)))
+            {
+                block = block - (lloff_t)extent->ee_block;
+                block += ext_to_block(extent);
+                break;
+            }
+        }
+    }
+    return block;
 }
 
 uint32_t Ext2Partition::fileblock_to_logical(EXT2_INODE *ino, uint32_t lbn)

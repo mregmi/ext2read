@@ -26,6 +26,7 @@
 
 #ifdef WIN32
 #include <windows.h>
+#include <stdint.h>
 
  typedef HANDLE FileHandle;
 #ifdef _MSC_VER
@@ -40,18 +41,12 @@
  #define FILE_DELIM	"/"
 #endif
 
+ typedef uint64_t lloff_t;
+
 typedef unsigned int uint;
 typedef unsigned long ulong;
 
 #define SECTOR_SIZE             512
-
-#if defined(__GNUC__) || defined(HAS_LONG_LONG)
- typedef long long lloff_t;
-#elif defined (WIN32)
- typedef __int64 lloff_t;
-#else
- typedef long      lloff_t;
-#endif
 
 #if defined(__GNUC__)
  #define PACKED __attribute__((packed))

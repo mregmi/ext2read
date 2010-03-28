@@ -69,7 +69,14 @@
 
 /* End compression flags --- maybe not all used */
 #define EXT2_BTREE_FL				0x00001000 /* btree format dir */
-#define EXT2_RESERVED_FL			0x80000000 /* reserved for ext2 lib */
+#define EXT2_IMAGIC_FL                  0x00002000 /* AFS directory */
+#define EXT2_JOURNAL_DATA_FL            0x00004000 /* file data should be journaled */
+#define EXT2_NOTAIL_FL                  0x00008000 /* file tail should not be merged */
+#define EXT2_DIRSYNC_FL                 0x00010000 /* dirsync behaviour (directories only) */
+#define EXT2_TOPDIR_FL                  0x00020000 /* Top of directory hierarchies*/
+#define EXT2_HUGE_FILE_FL               0x00040000 /* Set to each huge file */
+#define EXT2_EXTENTS_FL                 0x00080000 /* Inode uses extents */
+#define EXT2_RESERVED_FL		0x80000000 /* reserved for ext2 lib */
 
 #define EXT2_FL_USER_VISIBLE		0x00001FFF /* User visible flags */
 #define EXT2_FL_USER_MODIFIABLE		0x000000FF /* User modifiable flags */
@@ -249,6 +256,7 @@ typedef struct tagEXT2_DIR_ENTRY {
 
 
 #define EXT4_EXT_MAGIC          0xf30a
+#define get_ext4_header(i)      ((struct ext4_extent_header *) (i)->i_block)
 
 /*
  * This is the extent on-disk structure.
@@ -258,7 +266,7 @@ typedef struct ext4_extent {
     uint32_t ee_block; /* first logical block extent covers */
     uint16_t ee_len; /* number of blocks covered by extent */
     uint16_t ee_start_hi; /* high 16 bits of physical block */
-    uint32_t ee_start; /* low 32 bits of physical block */
+    uint32_t ee_start_lo; /* low 32 bits of physical block */
 } __attribute__ ((__packed__)) EXT2_EXTENT;
 
 /*
@@ -283,5 +291,23 @@ struct ext4_extent_header {
     uint16_t  eh_depth;       /* has tree real underlying blocks? */
     uint32_t  eh_generation;  /* generation of the tree */
 };
+
+#define EXT_FIRST_EXTENT(__hdr__) \
+         ((struct ext4_extent *) (((char *) (__hdr__)) +         \
+                                  sizeof(struct ext4_extent_header)))
+#define EXT_FIRST_INDEX(__hdr__) \
+         ((struct ext4_extent_idx *) (((char *) (__hdr__)) +     \
+                                      sizeof(struct ext4_extent_header)))
+#define INODE_HAS_EXTENT(i) ((i)->i_flags & EXT2_EXTENTS_FL)
+
+static inline uint64_t ext_to_block(struct ext4_extent *extent)
+{
+    uint64_t block;
+
+    block = (uint64_t)extent->ee_start_lo;
+    block |= ((uint64_t) extent->ee_start_hi << 31) << 1;
+
+    return block;
+}
 
 #endif

@@ -166,7 +166,7 @@ class Ext2Partition {
 
 public:
     bool onview;        // flag to determine if it is already added to view.
-    bool has_extent;    // flag to determine if this FS use Ext4 Extents
+    //bool has_extent;    // flag to determine if this FS use Ext4 Extents
 
 public:
     Ext2Partition(lloff_t, lloff_t, int ssise, FileHandle );

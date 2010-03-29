@@ -46,7 +46,7 @@ Ext2Explore::Ext2Explore(QWidget *parent) :
     ui->list->setModel(filemodel);
     ui->list->setViewMode(QListView::IconMode);
     ui->list->setIconSize(QSize(50,60));
-   // ui->list->setMovement(QListView::Free);
+    ui->list->setMovement(QListView::Static);
     ui->list->setWordWrap(true);
     ui->list->setWrapping(true);
 

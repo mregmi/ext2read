@@ -150,6 +150,7 @@ EXT2DIRENT *Ext2Partition::open_dir(Ext2File *parent)
 
 Ext2File *Ext2Partition::read_dir(EXT2DIRENT *dirent)
 {
+    string filename;
     Ext2File *newEntry;
     char *pos;
 
@@ -163,6 +164,7 @@ Ext2File *Ext2Partition::read_dir(EXT2DIRENT *dirent)
         read_data_block(&dirent->parent->inode, 0, dirent->dirbuf);
     }
 
+again:
     if(!dirent->next)
         dirent->next = dirent->dirbuf;
     else
@@ -176,6 +178,12 @@ Ext2File *Ext2Partition::read_dir(EXT2DIRENT *dirent)
         }
     }
 
+    filename.assign(dirent->next->name, dirent->next->name_len);
+    if((filename.compare(".") == 0) ||
+       (filename.compare("..") == 0))
+        goto again;
+
+
     newEntry = read_inode(dirent->next->inode);
     if(!newEntry)
     {
@@ -184,7 +192,7 @@ Ext2File *Ext2Partition::read_dir(EXT2DIRENT *dirent)
     }
 
     newEntry->file_type = dirent->next->filetype;
-    newEntry->file_name.assign(dirent->next->name, dirent->next->name_len);
+    newEntry->file_name = filename;
 
     return newEntry;
 }
@@ -290,6 +298,10 @@ lloff_t Ext2Partition::extent_to_logical(EXT2_INODE *ino, lloff_t lbn)
                 break;
             }
         }
+    }
+    else
+    {
+        LOG("Extent with depth > 0 found \n");
     }
     return block;
 }

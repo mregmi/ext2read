@@ -30,16 +30,22 @@ Ext2Explore::Ext2Explore(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::Ext2Explore)
 {
+    QRect rect;
     filemodel = new QStandardItemModel(this);
     app = new Ext2Read();
 
     ui->setupUi(this);
 
     ui->tree->setModel(filemodel);
+    ui->tree->header()->hide();
+
     ui->list->setModel(filemodel);
     ui->list->setViewMode(QListView::IconMode);
-    ui->tree->header()->hide();
-    ui->list->setIconSize(QSize(40,30));
+    ui->list->setIconSize(QSize(50,60));
+    ui->list->setMovement(QListView::Free);
+    ui->list->setWordWrap(true);
+    ui->list->setWrapping(true);
+
     root = filemodel->invisibleRootItem();
 
     this->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -52,10 +58,39 @@ Ext2Explore::Ext2Explore(QWidget *parent) :
 }
 
 Ext2Explore::~Ext2Explore()
-{
+{    
     delete ui;
     delete filemodel;
     delete app;
+}
+
+void Ext2Explore::delete_children(QStandardItem *parent)
+{
+    int nrows;
+    QVariant fileData;
+    QStandardItem *item;
+    Ext2File *file;
+    QByteArray ba;
+
+    if(!parent->hasChildren())
+        return;
+
+    nrows = parent->rowCount();
+    for(int i = 0; i < nrows; i++)
+    {
+        item = parent->child(i);
+        if(!item)
+            continue;
+        ba = item->text().toAscii();
+        const char *c_str2 = ba.data();
+        LOG("Deleting %s\n", c_str2);
+
+        delete_children(item);
+        fileData = item->data(Qt::UserRole);
+        file = (Ext2File *) fileData.value<void *>();
+        delete file;
+    }
+    parent->removeRows(0, nrows);
 }
 
 void Ext2Explore::init_root_fs()
@@ -93,6 +128,19 @@ void Ext2Explore::init_root_fs()
     }
 }
 
+// TODO: Handle more mime types according to file extension
+QString Ext2Explore::handle_mime(string file, uint16_t mode)
+{
+    QString str;
+
+    if(EXT2_S_ISDIR(mode))
+        str = ":/icons/resource/file_folder.png";
+    else
+        str = ":/icons/resource/file_unknown.png";
+
+    return str;
+}
+
 void Ext2Explore::changeEvent(QEvent *e)
 {
     QMainWindow::changeEvent(e);
@@ -122,9 +170,11 @@ void Ext2Explore::on_action_About_triggered()
 
 void Ext2Explore::on_action_Rescan_System_triggered()
 {
+    delete_children(root);
     delete app;
 
     app = new Ext2Read();
+    init_root_fs();
 }
 
 void Ext2Explore::on_actionOpen_Image_triggered()
@@ -160,6 +210,7 @@ void Ext2Explore::on_action_item_dbclicked(const QModelIndex &index)
     fileData = parentItem->data(Qt::UserRole);
     parentFile = (Ext2File *) fileData.value<void *>();
 
+     ui->list->setRootIndex(index);
     if(parentFile->onview)
         return;
 
@@ -170,17 +221,9 @@ void Ext2Explore::on_action_item_dbclicked(const QModelIndex &index)
     while((files = part->read_dir(dir)) != NULL)
     {
         LOG("Found File %s inode %d \n", files->file_name.c_str(), files->inode_num);
-        if( EXT2_S_ISDIR(files->inode.i_mode))
-        {
-            children = new QStandardItem(QIcon(":/icons/resource/file_folder.png"),
-                                 QString(files->file_name.c_str()));
-        }
-        else
-        {
-            children = new QStandardItem(QIcon(":/icons/resource/file_unknown.png"),
-                                 QString(files->file_name.c_str()));
-        }
 
+        children = new QStandardItem(QIcon(handle_mime(files->file_name, files->inode.i_mode)),
+                                 QString(files->file_name.c_str()));
         children->setData(qVariantFromValue((void *)files), Qt::UserRole);
         children->setEditable(false);
         parentItem->appendRow(children);

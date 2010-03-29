@@ -58,6 +58,9 @@ private:
     Ext2Read *app;
 
     void init_root_fs();
+    QString handle_mime(string file, uint16_t mode);
+    void delete_children(QStandardItem *parent);
+    void delete_file_tree();
 
 private slots:
     void on_actionOpen_Image_triggered();

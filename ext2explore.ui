@@ -14,39 +14,25 @@
    <string comment="Ext2explore to explore ext2/ext3 files from different platforms">Ext2explore</string>
   </property>
   <property name="windowIcon">
-   <iconset>
+   <iconset resource="ext2explore.qrc">
     <normaloff>:/icons/resource/tux.png</normaloff>:/icons/resource/tux.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QTextEdit" name="textEdit">
-    <property name="geometry">
-     <rect>
-      <x>300</x>
-      <y>-40</y>
-      <width>0</width>
-      <height>521</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QSplitter" name="splitter">
-    <property name="geometry">
-     <rect>
-      <x>-1</x>
-      <y>9</y>
-      <width>791</width>
-      <height>501</height>
-     </rect>
-    </property>
-    <property name="orientation">
-     <enum>Qt::Horizontal</enum>
-    </property>
-    <widget class="QTreeView" name="tree">
-     <property name="layoutDirection">
-      <enum>Qt::LeftToRight</enum>
-     </property>
-    </widget>
-    <widget class="QListView" name="list"/>
-   </widget>
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <widget class="QSplitter" name="splitter">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <widget class="QTreeView" name="tree">
+       <property name="layoutDirection">
+        <enum>Qt::LeftToRight</enum>
+       </property>
+      </widget>
+      <widget class="QListView" name="list"/>
+     </widget>
+    </item>
+   </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -121,7 +107,7 @@
   </widget>
   <action name="actionOpen_Image">
    <property name="icon">
-    <iconset>
+    <iconset resource="ext2explore.qrc">
      <normaloff>:/icons/resource/filenew.png</normaloff>:/icons/resource/filenew.png</iconset>
    </property>
    <property name="text">
@@ -130,7 +116,7 @@
   </action>
   <action name="actionCreate_New_Folder">
    <property name="icon">
-    <iconset>
+    <iconset resource="ext2explore.qrc">
      <normaloff>:/icons/resource/foldernew.png</normaloff>:/icons/resource/foldernew.png</iconset>
    </property>
    <property name="text">
@@ -139,7 +125,7 @@
   </action>
   <action name="action_Rescan_System">
    <property name="icon">
-    <iconset>
+    <iconset resource="ext2explore.qrc">
      <normaloff>:/icons/resource/linuxconf.png</normaloff>:/icons/resource/linuxconf.png</iconset>
    </property>
    <property name="text">
@@ -148,7 +134,7 @@
   </action>
   <action name="action_Exit">
    <property name="icon">
-    <iconset>
+    <iconset resource="ext2explore.qrc">
      <normaloff>:/icons/resource/exit.png</normaloff>:/icons/resource/exit.png</iconset>
    </property>
    <property name="text">
@@ -157,7 +143,7 @@
   </action>
   <action name="action_Cut">
    <property name="icon">
-    <iconset>
+    <iconset resource="ext2explore.qrc">
      <normaloff>:/icons/resource/editcut.png</normaloff>:/icons/resource/editcut.png</iconset>
    </property>
    <property name="text">
@@ -166,7 +152,7 @@
   </action>
   <action name="actionC_opy">
    <property name="icon">
-    <iconset>
+    <iconset resource="ext2explore.qrc">
      <normaloff>:/icons/resource/editcopy.png</normaloff>:/icons/resource/editcopy.png</iconset>
    </property>
    <property name="text">
@@ -175,7 +161,7 @@
   </action>
   <action name="action_Paste">
    <property name="icon">
-    <iconset>
+    <iconset resource="ext2explore.qrc">
      <normaloff>:/icons/resource/editpaste.png</normaloff>:/icons/resource/editpaste.png</iconset>
    </property>
    <property name="text">
@@ -184,7 +170,7 @@
   </action>
   <action name="action_Create_File">
    <property name="icon">
-    <iconset>
+    <iconset resource="ext2explore.qrc">
      <normaloff>:/icons/resource/filenew.png</normaloff>:/icons/resource/filenew.png</iconset>
    </property>
    <property name="text">
@@ -193,7 +179,7 @@
   </action>
   <action name="actionCreate_Folder">
    <property name="icon">
-    <iconset>
+    <iconset resource="ext2explore.qrc">
      <normaloff>:/icons/resource/foldernew.png</normaloff>:/icons/resource/foldernew.png</iconset>
    </property>
    <property name="text">
@@ -202,7 +188,7 @@
   </action>
   <action name="action_Save">
    <property name="icon">
-    <iconset>
+    <iconset resource="ext2explore.qrc">
      <normaloff>:/icons/resource/filesave.png</normaloff>:/icons/resource/filesave.png</iconset>
    </property>
    <property name="text">
@@ -211,7 +197,7 @@
   </action>
   <action name="actionCut">
    <property name="icon">
-    <iconset>
+    <iconset resource="ext2explore.qrc">
      <normaloff>:/icons/resource/editcut.png</normaloff>:/icons/resource/editcut.png</iconset>
    </property>
    <property name="text">
@@ -220,7 +206,7 @@
   </action>
   <action name="actionCopy">
    <property name="icon">
-    <iconset>
+    <iconset resource="ext2explore.qrc">
      <normaloff>:/icons/resource/editcopy.png</normaloff>:/icons/resource/editcopy.png</iconset>
    </property>
    <property name="text">
@@ -229,7 +215,7 @@
   </action>
   <action name="actionPaste">
    <property name="icon">
-    <iconset>
+    <iconset resource="ext2explore.qrc">
      <normaloff>:/icons/resource/editpaste.png</normaloff>:/icons/resource/editpaste.png</iconset>
    </property>
    <property name="text">
@@ -238,7 +224,7 @@
   </action>
   <action name="actionRename">
    <property name="icon">
-    <iconset>
+    <iconset resource="ext2explore.qrc">
      <normaloff>:/icons/resource/rename.png</normaloff>:/icons/resource/rename.png</iconset>
    </property>
    <property name="text">
@@ -247,7 +233,7 @@
   </action>
   <action name="actionDelete">
    <property name="icon">
-    <iconset>
+    <iconset resource="ext2explore.qrc">
      <normaloff>:/icons/resource/delete.png</normaloff>:/icons/resource/delete.png</iconset>
    </property>
    <property name="text">
@@ -259,7 +245,7 @@
   </action>
   <action name="actionP_roperties">
    <property name="icon">
-    <iconset>
+    <iconset resource="ext2explore.qrc">
      <normaloff>:/icons/resource/properties.png</normaloff>:/icons/resource/properties.png</iconset>
    </property>
    <property name="text">
@@ -268,7 +254,7 @@
   </action>
   <action name="action_About">
    <property name="icon">
-    <iconset>
+    <iconset resource="ext2explore.qrc">
      <normaloff>:/icons/resource/tux.png</normaloff>:/icons/resource/tux.png</iconset>
    </property>
    <property name="text">
@@ -276,7 +262,9 @@
    </property>
   </action>
  </widget>
- <resources/>
+ <resources>
+  <include location="ext2explore.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>action_Exit</sender>

@@ -175,7 +175,7 @@ public:
     void set_linux_name(const char *, int , int);
     string &get_linux_name();
     Ext2File *get_root() { return root; }
-
+    int get_blocksize() { return blocksize; }
     Ext2File *read_inode(uint32_t inum);
     EXT2DIRENT *open_dir(Ext2File *parent);
     Ext2File *read_dir(EXT2DIRENT *);

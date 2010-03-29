@@ -182,9 +182,9 @@
     <widget class="Line" name="line_3">
      <property name="geometry">
       <rect>
-       <x>10</x>
+       <x>0</x>
        <y>230</y>
-       <width>371</width>
+       <width>381</width>
        <height>20</height>
       </rect>
      </property>
@@ -221,14 +221,20 @@
     <widget class="QLineEdit" name="fileName">
      <property name="geometry">
       <rect>
-       <x>85</x>
+       <x>80</x>
        <y>10</y>
        <width>291</width>
        <height>20</height>
       </rect>
      </property>
+     <property name="acceptDrops">
+      <bool>false</bool>
+     </property>
      <property name="toolTip">
       <string>Name of the File or Folder</string>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
      </property>
     </widget>
     <widget class="QLabel" name="owner">
@@ -245,6 +251,9 @@
      </property>
     </widget>
     <widget class="QCheckBox" name="check_ow">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>170</x>
@@ -258,6 +267,9 @@
      </property>
     </widget>
     <widget class="QCheckBox" name="check_ox">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>250</x>
@@ -271,6 +283,9 @@
      </property>
     </widget>
     <widget class="QCheckBox" name="check_gr">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>90</x>
@@ -284,6 +299,9 @@
      </property>
     </widget>
     <widget class="QCheckBox" name="check_gw">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>170</x>
@@ -297,6 +315,9 @@
      </property>
     </widget>
     <widget class="QCheckBox" name="check_ge">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>250</x>
@@ -310,6 +331,9 @@
      </property>
     </widget>
     <widget class="QCheckBox" name="check_otr">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>90</x>
@@ -323,6 +347,9 @@
      </property>
     </widget>
     <widget class="QCheckBox" name="check_otw">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>170</x>
@@ -336,6 +363,9 @@
      </property>
     </widget>
     <widget class="QCheckBox" name="check_ote">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>250</x>
@@ -349,6 +379,9 @@
      </property>
     </widget>
     <widget class="QCheckBox" name="check_or">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <property name="geometry">
       <rect>
        <x>90</x>
@@ -359,6 +392,12 @@
      </property>
      <property name="text">
       <string/>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <property name="tristate">
+      <bool>true</bool>
      </property>
     </widget>
     <widget class="QLabel" name="attributes">
@@ -372,6 +411,110 @@
      </property>
      <property name="text">
       <string>Attributes:         Read                   Write                  Execute</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="typeval">
+     <property name="geometry">
+      <rect>
+       <x>80</x>
+       <y>40</y>
+       <width>291</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+    <widget class="QLabel" name="locationval">
+     <property name="geometry">
+      <rect>
+       <x>80</x>
+       <y>60</y>
+       <width>291</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+    <widget class="QLabel" name="sizeval">
+     <property name="geometry">
+      <rect>
+       <x>80</x>
+       <y>80</y>
+       <width>291</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+    <widget class="QLabel" name="containsval">
+     <property name="geometry">
+      <rect>
+       <x>80</x>
+       <y>120</y>
+       <width>291</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+    <widget class="QLabel" name="szdiskval">
+     <property name="geometry">
+      <rect>
+       <x>80</x>
+       <y>100</y>
+       <width>291</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+    <widget class="QLabel" name="createdval">
+     <property name="geometry">
+      <rect>
+       <x>80</x>
+       <y>170</y>
+       <width>291</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+    <widget class="QLabel" name="modifiedval">
+     <property name="geometry">
+      <rect>
+       <x>80</x>
+       <y>190</y>
+       <width>291</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+    <widget class="QLabel" name="accessedval">
+     <property name="geometry">
+      <rect>
+       <x>80</x>
+       <y>210</y>
+       <width>291</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string/>
      </property>
     </widget>
    </widget>

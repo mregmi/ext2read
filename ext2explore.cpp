@@ -38,7 +38,11 @@ Ext2Explore::Ext2Explore(QWidget *parent) :
 
     ui->tree->setModel(filemodel);
     ui->tree->header()->hide();
+    ui->tree->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->tree->setSelectionMode(QAbstractItemView::SingleSelection);
 
+    ui->list->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->list->setSelectionMode( QAbstractItemView::SingleSelection );
     ui->list->setModel(filemodel);
     ui->list->setViewMode(QListView::IconMode);
     ui->list->setIconSize(QSize(50,60));
@@ -47,6 +51,8 @@ Ext2Explore::Ext2Explore(QWidget *parent) :
     ui->list->setWrapping(true);
 
     root = filemodel->invisibleRootItem();
+    selectionModel = ui->list->selectionModel();
+    ui->tree->setSelectionModel(selectionModel);
 
     this->setContextMenuPolicy(Qt::CustomContextMenu);
     init_root_fs();
@@ -106,7 +112,7 @@ void Ext2Explore::init_root_fs()
     {
         temp = (*i);
 
-        // check if itis already in the view
+        // check if it is already in the view
         if(temp->onview)
             continue;
 
@@ -160,6 +166,18 @@ void Ext2Explore::on_action_Exit_triggered()
 
 void Ext2Explore::on_actionP_roperties_triggered()
 {
+    QModelIndexList indexes = selectionModel->selectedIndexes();
+    QModelIndex index;
+    QStandardItem *item;
+    QVariant fileData;
+    Ext2File *file;
+
+    foreach(index, indexes) {
+        item = filemodel->itemFromIndex(index);
+        fileData = item->data(Qt::UserRole);
+        file = (Ext2File *) fileData.value<void *>();
+        property.set_properties(file);
+    }
     property.show();
 }
 

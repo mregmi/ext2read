@@ -53,6 +53,7 @@ private:
     Ext2Properties property;
     Ext2About about;
 
+    QItemSelectionModel *selectionModel;
     QStandardItemModel *filemodel;
     QStandardItem *root;
     Ext2Read *app;

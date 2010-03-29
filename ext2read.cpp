@@ -106,8 +106,15 @@ int Ext2Read::scan_ebr(FileHandle handle, lloff_t base, int sectsize, int disk)
         if(part->sys_ind == EXT2)
         {
             partition = new Ext2Partition(get_nr_sects(part), get_start_sect(part)+ ebrBase + ebr2, sectsize, handle);
-            partition->set_linux_name("/dev/sd", disk, logical);
-            nparts.push_back(partition);
+            if(partition->is_valid)
+            {
+                partition->set_linux_name("/dev/sd", disk, logical);
+                nparts.push_back(partition);
+            }
+            else
+            {
+                delete partition;
+            }
         }
 
         if(part->sys_ind == LVM)
@@ -150,11 +157,12 @@ int Ext2Read::scan_partitions(char *path, int diskno)
         LOG("Error Reading the MBR on %s \n", path);
         return -1;
     }
+   // part = pt_offset(sector, 0);
     if(!valid_part_table_flag(sector))
     {
         LOG("Partition Table Error on %s\n", path);
         LOG("Invalid End of sector marker");
-        return -1;
+        return -INVALID_TABLE;
     }
 
     /* First Scan primary Partitions */
@@ -168,9 +176,16 @@ int Ext2Read::scan_partitions(char *path, int diskno)
             if(part->sys_ind == EXT2)
             {
                 partition = new Ext2Partition(get_nr_sects(part), get_start_sect(part), sector_size, handle);
-                partition->set_linux_name("/dev/sd", diskno, i);
-                nparts.push_back(partition);
-                LOG("Linux Partition found on disk %d partition %d\n", diskno, i);
+                if(partition->is_valid)
+                {
+                    partition->set_linux_name("/dev/sd", diskno, i);
+                    nparts.push_back(partition);
+                    LOG("Linux Partition found on disk %d partition %d\n", diskno, i);
+                }
+                else
+                {
+                    delete partition;
+                }
             }
 
             if(part->sys_ind == LVM)
@@ -190,6 +205,27 @@ int Ext2Read::scan_partitions(char *path, int diskno)
 
 int Ext2Read::add_loopback(const char *file)
 {
+    int ret, sector_size;
+    Ext2Partition *partition;
+    FileHandle handle;
+
     ndisks++;
-    return scan_partitions((char *)file, ndisks);
+   ret = scan_partitions((char *)file, ndisks);
+   if(ret == -INVALID_TABLE)
+   {
+       handle = open_disk(file, &sector_size);
+       partition = new Ext2Partition(0, 0, sector_size, handle);
+       if(partition->is_valid)
+       {
+            partition->set_image_name(file);
+            nparts.push_back(partition);
+            LOG("Linux Partition found on disk %d partition %d\n", ndisks, 0);
+            return 1;
+        }
+       else
+       {
+           delete partition;
+       }
+   }
+   return 0;
 }

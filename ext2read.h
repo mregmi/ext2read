@@ -35,6 +35,7 @@
 #include "ext2fs.h"
 #include "lvm.h"
 
+#define INVALID_TABLE                   3
 #define FILE_TYPE_PARTITON		0x7E
 #define FILE_TYPE_DIR			2
 
@@ -166,13 +167,14 @@ class Ext2Partition {
 
 public:
     bool onview;        // flag to determine if it is already added to view.
-    //bool has_extent;    // flag to determine if this FS use Ext4 Extents
+    bool is_valid;      // is this valid Ext2/3/4 partition
 
 public:
     Ext2Partition(lloff_t, lloff_t, int ssise, FileHandle );
     ~Ext2Partition();
 
     void set_linux_name(const char *, int , int);
+    void set_image_name(const char *name) { linux_name.assign(name); }
     string &get_linux_name();
     Ext2File *get_root() { return root; }
     int get_blocksize() { return blocksize; }

@@ -42,11 +42,15 @@ Ext2Partition::Ext2Partition(lloff_t size, lloff_t offset, int ssize, FileHandle
     //has_extent = 1;
     ret = mount();
     if(ret < 0)
+    {
+        is_valid = false;
         return;
+    }
 
     root = read_inode(EXT2_ROOT_INO);
     if(!root)
     {
+        is_valid = false;
         LOG("Cannot read the root of %s \n", linux_name.c_str());
         return;
     }

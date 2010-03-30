@@ -136,6 +136,11 @@ struct block_hint {
     uint32_t tind_hint;
 };
 
+struct extent_hint {
+    EXT4_EXTENT_HEADER *header;
+    lloff_t hint;
+};
+
 typedef struct ext2dirent {
     EXT2_DIR_ENTRY *next;
     EXT2_DIR_ENTRY *dirbuf;
@@ -157,12 +162,14 @@ class Ext2Partition {
     char *inode_buffer;         // buffer to cache last used block of inodes
     lloff_t last_block;          // block number of the last inode block read
     Ext2File *root;
-    struct block_hint hint;
+    struct block_hint hint;     // used for indirect addressing inodes
+    struct extent_hint exthint;         // used for extent based inodes
 
     int ext2_readblock(lloff_t blocknum, void *buffer);
     int read_data_block(EXT2_INODE *ino, lloff_t lbn, void *buf);
     uint32_t fileblock_to_logical(EXT2_INODE *ino, uint32_t lbn);
     lloff_t extent_to_logical(EXT2_INODE *ino, lloff_t lbn);
+    lloff_t extent_binarysearch(EXT4_EXTENT_HEADER *header, lloff_t lbn, bool isallocated);
     int mount();
 
 public:

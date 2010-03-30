@@ -30,7 +30,7 @@
 
 LVM::LVM(FileHandle handle, lloff_t offset)
 {
-    pv_metadata = new struct pv_metadata;
+    pv = new struct pv_metadata;
 
 }
 

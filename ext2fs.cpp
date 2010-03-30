@@ -276,14 +276,14 @@ int Ext2Partition::read_data_block(EXT2_INODE *ino, lloff_t lbn, void *buf)
         return ext2_readblock(block, buf);
 }
 
-lloff_t Ext2Partition::extent_to_logical(EXT2_INODE *ino, lloff_t lbn)
+lloff_t Ext2Partition::extent_binarysearch(EXT4_EXTENT_HEADER *header, lloff_t lbn, bool isallocated)
 {
-    struct ext4_extent_header *header;
-    struct ext4_extent *extent;
+    EXT4_EXTENT *extent;
+    EXT4_EXTENT_IDX *index;
+    EXT4_EXTENT_HEADER *child;
+    lloff_t physical_block = 0;
+    lloff_t block;
 
-    lloff_t block = 0;
-
-    header  = get_ext4_header(ino);
     if(header->eh_magic != EXT4_EXT_MAGIC)
     {
         LOG("Invalid magic in Extent Header: %X\n", header->eh_magic);
@@ -293,21 +293,60 @@ lloff_t Ext2Partition::extent_to_logical(EXT2_INODE *ino, lloff_t lbn)
     if(header->eh_depth == 0)
     {
         for(int i = 0; i < header->eh_entries; i++)
-        {
-            extent = extent + i;
+        {         
             if((lbn >= extent->ee_block) &&
                (lbn < (extent->ee_block + extent->ee_len)))
             {
-                block = block - (lloff_t)extent->ee_block;
-                block += ext_to_block(extent);
-                break;
+                physical_block = physical_block - (lloff_t)extent->ee_block;
+                physical_block += ext_to_block(extent);
+                if(isallocated)
+                    delete [] header;
+
+                return physical_block;
             }
+            extent++; // Pointer increment by size of Extent.
         }
     }
-    else
+
+    index = EXT_FIRST_INDEX(header);
+    for(int i = 0; i < header->eh_entries; i++)
     {
-        LOG("Extent with depth > 0 found \n");
+        if(lbn >= index->ei_block)
+        {
+            block = idx_to_block(index);
+            if(exthint.hint != block)
+            {
+                if(!exthint.header)
+                {
+                    exthint.header = (EXT4_EXTENT_HEADER *)new char [blocksize];
+                    if(!exthint.header)
+                        return 0;
+                }
+                ext2_readblock(block, (void *)exthint.header);
+                exthint.hint = block;
+            }
+            child = (EXT4_EXTENT_HEADER *) new char [blocksize];
+            memcpy(child, exthint.header,
+                   (exthint.header->eh_entries * sizeof(EXT4_EXTENT)) + sizeof(EXT4_EXTENT_HEADER));
+            return extent_binarysearch(child, lbn, true);
+        }
     }
+
+    // We reach here if we do not find the key
+    if(isallocated)
+        delete [] header;
+
+    return physical_block;
+}
+
+lloff_t Ext2Partition::extent_to_logical(EXT2_INODE *ino, lloff_t lbn)
+{
+    lloff_t block;
+    struct ext4_extent_header *header;
+
+    header = get_ext4_header(ino);
+    block = extent_binarysearch(header, lbn, false);
+
     return block;
 }
 

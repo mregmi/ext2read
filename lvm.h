@@ -26,7 +26,7 @@
 
 #include <stdint.h>
 
-#include "platform.h"
+#include "ext2read.h"
 
 #define LVM_SIGNATURE	('H' +  ('M' << 8))
 #define LVM_NAME_LEN	128
@@ -35,12 +35,12 @@
 //#pragma pack(push, 1)
 
 /* structure to hold the base address and size */
-struct lvm_sz {
+/*struct lvm_sz {
 	uint32_t base, limit;
 } PACKED;
-
+*/
 /* Structure to hold Physical Volumes (PV) */
-struct pv_metadata {
+/*struct pv_metadata {
 	uint16_t	pv_sig;			// Physical volume signature
 	uint16_t	pv_version;		// Physical Volume version
 	struct lvm_sz pv_pv;
@@ -55,19 +55,27 @@ struct pv_metadata {
 	uint32_t pv_number;
 	uint32_t pv_status;
 	uint32_t pv_allocatable;
-	uint32_t pv_size;		/* HM */
+        uint32_t pv_size;
 	uint32_t lv_cur;
 	uint32_t pe_size;
 	uint32_t pe_total;
 	uint32_t pe_allocated;
 } PACKED;
-
+*/
 //#pragma pack(pop)
+
+
+class LVM {
+    char *pv_metadata;
+
+public:
+    LVM(lloff_t offset);
+};
 
 #ifdef __cplusplus
 extern "C"{
 #endif
-int scan_lvm(int);
+int scan_lvm(FileHandle handle, lloff_t offset);
 
 #ifdef __cplusplus
 }

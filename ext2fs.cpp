@@ -57,6 +57,7 @@ Ext2Partition::Ext2Partition(lloff_t size, lloff_t offset, int ssize, FileHandle
 
    root->file_name = linux_name;
    root->file_type = 0x02;   //FIXME: do not hardcode
+   is_valid = true;
 }
 
 Ext2Partition::~Ext2Partition()

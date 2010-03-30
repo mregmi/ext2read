@@ -28,27 +28,23 @@
 #include "partition.h"
 
 
-int scan_lvm(int n)
+LVM::LVM(lloff_t offset)
 {
-/*        struct pv_metadata *pv;
-        char *buf;
-        struct disk *dsk;
+    pv_metadata = (char *)malloc(1024);
+
+}
+
+int scan_lvm(FileHandle handle, lloff_t offset)
+{
+        char *data;
         int ret;
 
-        buf = malloc(1024);
+        data = (char *)malloc(2046);
 
-        dsk = &sys.dsk[p->disk];
-        ret = read_sector(dsk, p->relSect, 2, buf);
-        if(ret < 0)
-        {
-                LOG("Error reading LVM");
-        }
-
-        pv = (struct pv_metadata *)buf;
-        ret = sizeof(*pv);
-        dsk = NULL;
-        free(pv);
-*/
+         ret = read_disk(handle, data, offset + 1, 3, 512);
+         data[1023] = 0;
+         LOG("PV Metadata \n%s", data);
+         free(data);
         return 0;
 }
 

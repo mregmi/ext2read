@@ -28,48 +28,35 @@
 
 #include "ext2read.h"
 
-#define LVM_SIGNATURE	('H' +  ('M' << 8))
-#define LVM_NAME_LEN	128
-#define UUID_LEN		16
+#define LVM_SIGLEN	8
+#define LVM_MAGIC_LEN	8
+#define UUID_LEN	32
 
 //#pragma pack(push, 1)
 
 /* structure to hold the base address and size */
-/*struct lvm_sz {
+struct lvm_sz {
 	uint32_t base, limit;
 } PACKED;
-*/
+
 /* Structure to hold Physical Volumes (PV) */
-/*struct pv_metadata {
-	uint16_t	pv_sig;			// Physical volume signature
-	uint16_t	pv_version;		// Physical Volume version
-	struct lvm_sz pv_pv;
-	struct lvm_sz pv_vg;
-	struct lvm_sz pv_pvuuid;
-	struct lvm_sz pv_lv;
-	struct lvm_sz pv_pe;
-	uint8_t		pv_uuid[LVM_NAME_LEN];
-	uint8_t		pv_vgname[LVM_NAME_LEN];
-	uint8_t		pv_sysid[LVM_NAME_LEN];
-	uint32_t pv_major;
-	uint32_t pv_number;
-	uint32_t pv_status;
-	uint32_t pv_allocatable;
-        uint32_t pv_size;
-	uint32_t lv_cur;
-	uint32_t pe_size;
-	uint32_t pe_total;
-	uint32_t pe_allocated;
-} PACKED;
-*/
-//#pragma pack(pop)
+struct pv_metadata {
+        char        pv_name[LVM_SIGLEN];    // Physical volume signature
+        uint64_t    pv_uknown0;
+        uint64_t    pv_uknown1;
+        char        pv_vermagic[LVM_MAGIC_LEN]; // Physical Volume version
+        char        pv_uuid[UUID_LEN];
+        char        padding[448];
+} __attribute__ ((__packed__));
 
 
 class LVM {
-    char *pv_metadata;
+
+    struct pv_metadata *pv;
 
 public:
-    LVM(lloff_t offset);
+    LVM(FileHandle handle, lloff_t offset);
+    ~LVM();
 };
 
 #ifdef __cplusplus

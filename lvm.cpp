@@ -28,10 +28,15 @@
 #include "partition.h"
 
 
-LVM::LVM(lloff_t offset)
+LVM::LVM(FileHandle handle, lloff_t offset)
 {
-    pv_metadata = (char *)malloc(1024);
+    pv_metadata = new struct pv_metadata;
 
+}
+
+LVM::~LVM()
+{
+    delete pv;
 }
 
 int scan_lvm(FileHandle handle, lloff_t offset)

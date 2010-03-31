@@ -83,6 +83,11 @@ bool Ext2CopyFile::showMessageBox()
     return false;
 }
 
+void Ext2CopyFile::start_copy()
+{
+
+}
+
 void Ext2CopyFile::on_buttonBox_accepted()
 {
     cancelOperation = true;

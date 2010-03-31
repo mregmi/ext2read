@@ -24,6 +24,8 @@
 #include <QFileDialog>
 
 #include "ext2explore.h"
+#include "ext2copyfile.h"
+
 #include "ui_ext2explore.h"
 
 Ext2Explore::Ext2Explore(QWidget *parent) :
@@ -272,16 +274,12 @@ void Ext2Explore::ext2_context_menu(const QPoint &point)
 void Ext2Explore::on_action_Save_triggered()
 {
     QString filename;
-    QByteArray ba;
     QModelIndexList indexes = selectionModel->selectedIndexes();
     QModelIndex index;
     QStandardItem *item;
     QVariant fileData;
     Ext2File *file;
-    char *buf;
-    lloff_t blocks;
-    lloff_t blkindex;
-    int extra, blksize, ret;
+
 
 
     if(indexes.length() <= 0)
@@ -296,10 +294,7 @@ void Ext2Explore::on_action_Save_triggered()
     filename = QFileDialog::getSaveFileName(this, tr("Save File/Folder"),
                                             "",
                                             tr("All Files (*.*)"));
-    ba = filename.toAscii();
-    const char *c_str2 = ba.data();
-    LOG("saving file %s as %s \n", file->file_name.c_str(), c_str2);
 
-    QFile destfile(filename);
-
+    Ext2CopyFile cp(file, filename);
+    cp.start_copy();
 }

@@ -301,34 +301,5 @@ void Ext2Explore::on_action_Save_triggered()
     LOG("saving file %s as %s \n", file->file_name.c_str(), c_str2);
 
     QFile destfile(filename);
-    if (!destfile.open(QIODevice::ReadWrite | QIODevice::Truncate))
-             return;
-    blksize = file->partition->get_blocksize();
-    buf = new char [blksize];
-    blocks = file->file_size / blksize;
-    for(blkindex = 0; blkindex < blocks; blkindex++)
-    {
-        ret = file->partition->read_data_block(&file->inode, blkindex, buf);
-        if(ret < 0)
-        {
-            goto out;
-            return;
-        }
-        destfile.write(buf, blksize);
-    }
 
-    extra = file->file_size % blksize;
-    if(extra)
-    {
-        ret = file->partition->read_data_block(&file->inode, blkindex, buf);
-        if(ret < 0)
-        {
-            goto out;
-            return;
-        }
-        destfile.write(buf, extra);
-    }
-    destfile.close();
-out:
-    delete [] buf;
 }

@@ -238,7 +238,7 @@ void Ext2Explore::on_action_item_dbclicked(const QModelIndex &index)
     dir = part->open_dir(parentFile);
     while((files = part->read_dir(dir)) != NULL)
     {
-        LOG("Found File %s inode %d \n", files->file_name.c_str(), files->inode_num);
+//        LOG("Found File %s inode %d \n", files->file_name.c_str(), files->inode_num);
 
         children = new QStandardItem(QIcon(handle_mime(files->file_name, files->inode.i_mode)),
                                  QString(files->file_name.c_str()));
@@ -267,4 +267,68 @@ void Ext2Explore::ext2_context_menu(const QPoint &point)
     menu.addAction(ui->actionP_roperties);
 
     menu.exec(this->mapToGlobal(point));
+}
+
+void Ext2Explore::on_action_Save_triggered()
+{
+    QString filename;
+    QByteArray ba;
+    QModelIndexList indexes = selectionModel->selectedIndexes();
+    QModelIndex index;
+    QStandardItem *item;
+    QVariant fileData;
+    Ext2File *file;
+    char *buf;
+    lloff_t blocks;
+    lloff_t blkindex;
+    int extra, blksize, ret;
+
+
+    if(indexes.length() <= 0)
+        return;
+
+    index = indexes[0];
+
+    item = filemodel->itemFromIndex(index);
+    fileData = item->data(Qt::UserRole);
+    file = (Ext2File *) fileData.value<void *>();
+
+    filename = QFileDialog::getSaveFileName(this, tr("Save File/Folder"),
+                                            "",
+                                            tr("All Files (*.*)"));
+    ba = filename.toAscii();
+    const char *c_str2 = ba.data();
+    LOG("saving file %s as %s \n", file->file_name.c_str(), c_str2);
+
+    QFile destfile(filename);
+    if (!destfile.open(QIODevice::ReadWrite | QIODevice::Truncate))
+             return;
+    blksize = file->partition->get_blocksize();
+    buf = new char [blksize];
+    blocks = file->file_size / blksize;
+    for(blkindex = 0; blkindex < blocks; blkindex++)
+    {
+        ret = file->partition->read_data_block(&file->inode, blkindex, buf);
+        if(ret < 0)
+        {
+            goto out;
+            return;
+        }
+        destfile.write(buf, blksize);
+    }
+
+    extra = file->file_size % blksize;
+    if(extra)
+    {
+        ret = file->partition->read_data_block(&file->inode, blkindex, buf);
+        if(ret < 0)
+        {
+            goto out;
+            return;
+        }
+        destfile.write(buf, extra);
+    }
+    destfile.close();
+out:
+    delete [] buf;
 }

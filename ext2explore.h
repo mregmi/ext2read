@@ -64,6 +64,7 @@ private:
     void delete_file_tree();
 
 private slots:
+    void on_action_Save_triggered();
     void on_actionOpen_Image_triggered();
     void on_action_Rescan_System_triggered();
     void on_action_About_triggered();

@@ -149,6 +149,8 @@ EXT2DIRENT *Ext2Partition::open_dir(Ext2File *parent)
     dirent->parent = parent;
     dirent->next = NULL;
     dirent->dirbuf = NULL;
+    dirent->read_bytes = 0;
+    dirent->next_block = 0;
 
     return dirent;
 }
@@ -158,6 +160,7 @@ Ext2File *Ext2Partition::read_dir(EXT2DIRENT *dirent)
     string filename;
     Ext2File *newEntry;
     char *pos;
+    int ret;
 
     if(!dirent)
         return NULL;
@@ -166,7 +169,11 @@ Ext2File *Ext2Partition::read_dir(EXT2DIRENT *dirent)
         dirent->dirbuf = (EXT2_DIR_ENTRY *) new char[blocksize];
         if(!dirent->dirbuf)
             return NULL;
-        read_data_block(&dirent->parent->inode, 0, dirent->dirbuf);
+        ret = read_data_block(&dirent->parent->inode, dirent->next_block, dirent->dirbuf);
+        if(ret < 0)
+            return NULL;
+
+        dirent->next_block++;
     }
 
 again:
@@ -178,11 +185,22 @@ again:
         dirent->next = (EXT2_DIR_ENTRY *)(pos + dirent->next->rec_len);
         if(IS_BUFFER_END(dirent->next, dirent->dirbuf, blocksize))
         {
+            if(dirent->read_bytes < dirent->parent->file_size)
+            {
+                LOG("DIR: Reading next block %d parent %s\n", dirent->next_block, dirent->parent->file_name.c_str());
+                ret = read_data_block(&dirent->parent->inode, dirent->next_block, dirent->dirbuf);
+                if(ret < 0)
+                    return NULL;
+
+                dirent->next_block++;
+                goto again;
+            }
             dirent->next = NULL;
             return NULL;
         }
     }
 
+    dirent->read_bytes += dirent->next->rec_len;
     filename.assign(dirent->next->name, dirent->next->name_len);
     if((filename.compare(".") == 0) ||
        (filename.compare("..") == 0))
@@ -252,6 +270,7 @@ Ext2File *Ext2Partition::read_inode(uint32_t inum)
 
     //LOG("BLKNUM is %d, inode_index %d\n", file->inode.i_size, inode_index);
     file->inode_num = inum;
+    file->file_size = src->i_size;  // FIXME: Larger files than 2 GB
     file->partition = (Ext2Partition *)this;
     file->onview = false;
 
@@ -290,27 +309,31 @@ lloff_t Ext2Partition::extent_binarysearch(EXT4_EXTENT_HEADER *header, lloff_t l
         return 0;
     }
     extent = EXT_FIRST_EXTENT(header);
+    LOG("HEADER: magic %x Entries: %d depth %d\n", header->eh_magic, header->eh_entries, header->eh_depth);
     if(header->eh_depth == 0)
-    {
+    {        
         for(int i = 0; i < header->eh_entries; i++)
         {         
+            LOG("EXTENT: Block: %d Length: %d LBN: %d\n", extent->ee_block, extent->ee_len, lbn);
             if((lbn >= extent->ee_block) &&
                (lbn < (extent->ee_block + extent->ee_len)))
             {
+                physical_block = ext_to_block(extent);
                 physical_block = physical_block - (lloff_t)extent->ee_block;
-                physical_block += ext_to_block(extent);
                 if(isallocated)
                     delete [] header;
-
+                LOG("Physical Block: %d\n", physical_block);
                 return physical_block;
             }
             extent++; // Pointer increment by size of Extent.
         }
+        return 0;
     }
 
     index = EXT_FIRST_INDEX(header);
     for(int i = 0; i < header->eh_entries; i++)
     {
+        LOG("INDEX: Block: %d Leaf: %d \n", index->ei_block, index->ei_leaf_hi);
         if(lbn >= index->ei_block)
         {
             block = idx_to_block(index);

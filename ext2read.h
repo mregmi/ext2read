@@ -121,6 +121,7 @@ public:
     uint32_t    inode_num;
     uint8_t     file_type;
     string      file_name;
+    lloff_t     file_size;
 
     EXT2_INODE  inode;
     Ext2Partition *partition;
@@ -145,6 +146,8 @@ typedef struct ext2dirent {
     EXT2_DIR_ENTRY *next;
     EXT2_DIR_ENTRY *dirbuf;
     Ext2File *parent;
+    lloff_t read_bytes;     // Bytes already read
+    lloff_t next_block;
 } EXT2DIRENT;
 
 class Ext2Partition {
@@ -166,7 +169,6 @@ class Ext2Partition {
     struct extent_hint exthint;         // used for extent based inodes
 
     int ext2_readblock(lloff_t blocknum, void *buffer);
-    int read_data_block(EXT2_INODE *ino, lloff_t lbn, void *buf);
     uint32_t fileblock_to_logical(EXT2_INODE *ino, uint32_t lbn);
     lloff_t extent_to_logical(EXT2_INODE *ino, lloff_t lbn);
     lloff_t extent_binarysearch(EXT4_EXTENT_HEADER *header, lloff_t lbn, bool isallocated);
@@ -186,6 +188,7 @@ public:
     Ext2File *get_root() { return root; }
     int get_blocksize() { return blocksize; }
     Ext2File *read_inode(uint32_t inum);
+    int read_data_block(EXT2_INODE *ino, lloff_t lbn, void *buf);
     EXT2DIRENT *open_dir(Ext2File *parent);
     Ext2File *read_dir(EXT2DIRENT *);
     void close_dir(EXT2DIRENT *);

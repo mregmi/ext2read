@@ -297,7 +297,7 @@ void Ext2Explore::on_action_Save_triggered()
     else
     {
         filename = QFileDialog::getSaveFileName(this, tr("Save File/Folder"),
-                                "",
+                                QString(file->file_name.c_str()),
                                 tr("All Files (*.*)"));
     }
     if(filename.isEmpty())

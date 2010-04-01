@@ -12,6 +12,9 @@ Ext2CopyFile::Ext2CopyFile(Ext2File *parent, QString &dest)
     buffer = new char [blksize];
     filetosave = NULL;
     cancelOperation = false;
+
+    progress = new Ui::ProgressDialog();
+    progress->setupUi(this);
 }
 
 Ext2CopyFile::~Ext2CopyFile()
@@ -38,6 +41,7 @@ bool Ext2CopyFile::copy_file(QString &destfile, Ext2File *srcfile)
     const char *c_str2 = ba.data();
 
     LOG("Copying file %s as %s\n", srcfile->file_name.c_str(), c_str2);
+    progress->FileLabel->setText(QString(srcfile->file_name.c_str()));
     blocks = srcfile->file_size / blksize;
     for(blkindex = 0; blkindex < blocks; blkindex++)
     {
@@ -52,6 +56,7 @@ bool Ext2CopyFile::copy_file(QString &destfile, Ext2File *srcfile)
             return false;
         }
         filetosave->write(buffer, blksize);
+
     }
 
     extra = srcfile->file_size % blksize;
@@ -88,6 +93,9 @@ bool Ext2CopyFile::copy_folder(QString &path, Ext2File *parent)
     ba = path.toAscii();
     const char *c_str2 = ba.data();
     LOG("Creating Folder %s as %s\n", parent->file_name.c_str(), c_str2);
+    progress->ToLabel->setText(path);
+    progress->Fromlabel->setText(parent->file_name.c_str());
+
     dirent = part->open_dir(parent);
     while((child = part->read_dir(dirent)) != NULL)
     {
@@ -144,6 +152,8 @@ bool Ext2CopyFile::showMessageBox()
 
 void Ext2CopyFile::start_copy()
 {
+    this->show();
+
     if(EXT2_S_ISDIR(file->inode.i_mode))
     {
         copy_folder(filename, file);
@@ -154,6 +164,7 @@ void Ext2CopyFile::start_copy()
 
     copy_file(filename, file);
 }
+
 
 void Ext2CopyFile::on_buttonBox_accepted()
 {

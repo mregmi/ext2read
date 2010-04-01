@@ -280,20 +280,28 @@ void Ext2Explore::on_action_Save_triggered()
     QVariant fileData;
     Ext2File *file;
 
-
-
     if(indexes.length() <= 0)
         return;
 
     index = indexes[0];
-
     item = filemodel->itemFromIndex(index);
     fileData = item->data(Qt::UserRole);
     file = (Ext2File *) fileData.value<void *>();
 
-    filename = QFileDialog::getSaveFileName(this, tr("Save File/Folder"),
-                                            "",
-                                            tr("All Files (*.*)"));
+    if(EXT2_S_ISDIR(file->inode.i_mode))
+    {
+        filename = QFileDialog::getExistingDirectory(this, tr("Save Folder in"),
+                                "",
+                                QFileDialog::ShowDirsOnly);
+    }
+    else
+    {
+        filename = QFileDialog::getSaveFileName(this, tr("Save File/Folder"),
+                                "",
+                                tr("All Files (*.*)"));
+    }
+    if(filename.isEmpty())
+        return;
 
     Ext2CopyFile cp(file, filename);
     cp.start_copy();

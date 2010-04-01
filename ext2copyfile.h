@@ -26,7 +26,7 @@ public:
     void start_copy();
 
 private:
-    void copy_folder(QString path, Ext2File *file);
+    bool copy_folder(QString &path, Ext2File *file);
     bool copy_file(QString &destfile, Ext2File *srcfile);
     bool showMessageBox();
 

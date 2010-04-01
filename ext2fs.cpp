@@ -39,6 +39,9 @@ Ext2Partition::Ext2Partition(lloff_t size, lloff_t offset, int ssize, FileHandle
     inode_buffer = NULL;
     hint.dind = hint.ind = NULL;
     hint.ind_hint = hint.dind_hint = 0;
+    exthint.header = NULL;
+    exthint.hint = 0;
+
     //has_extent = 1;
     ret = mount();
     if(ret < 0)
@@ -309,12 +312,12 @@ lloff_t Ext2Partition::extent_binarysearch(EXT4_EXTENT_HEADER *header, lloff_t l
         return 0;
     }
     extent = EXT_FIRST_EXTENT(header);
-    LOG("HEADER: magic %x Entries: %d depth %d\n", header->eh_magic, header->eh_entries, header->eh_depth);
+//    LOG("HEADER: magic %x Entries: %d depth %d\n", header->eh_magic, header->eh_entries, header->eh_depth);
     if(header->eh_depth == 0)
     {        
         for(int i = 0; i < header->eh_entries; i++)
         {         
-            LOG("EXTENT: Block: %d Length: %d LBN: %d\n", extent->ee_block, extent->ee_len, lbn);
+  //          LOG("EXTENT: Block: %d Length: %d LBN: %d\n", extent->ee_block, extent->ee_len, lbn);
             if((lbn >= extent->ee_block) &&
                (lbn < (extent->ee_block + extent->ee_len)))
             {
@@ -322,7 +325,7 @@ lloff_t Ext2Partition::extent_binarysearch(EXT4_EXTENT_HEADER *header, lloff_t l
                 physical_block = physical_block - (lloff_t)extent->ee_block;
                 if(isallocated)
                     delete [] header;
-                LOG("Physical Block: %d\n", physical_block);
+//                LOG("Physical Block: %d\n", physical_block);
                 return physical_block;
             }
             extent++; // Pointer increment by size of Extent.
@@ -333,7 +336,7 @@ lloff_t Ext2Partition::extent_binarysearch(EXT4_EXTENT_HEADER *header, lloff_t l
     index = EXT_FIRST_INDEX(header);
     for(int i = 0; i < header->eh_entries; i++)
     {
-        LOG("INDEX: Block: %d Leaf: %d \n", index->ei_block, index->ei_leaf_hi);
+        LOG("INDEX: Block: %d Leaf: %d \n", index->ei_block, index->ei_leaf_lo);
         if(lbn >= index->ei_block)
         {
             block = idx_to_block(index);

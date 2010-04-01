@@ -188,6 +188,7 @@ again:
         dirent->next = (EXT2_DIR_ENTRY *)(pos + dirent->next->rec_len);
         if(IS_BUFFER_END(dirent->next, dirent->dirbuf, blocksize))
         {
+            dirent->next = NULL;
             if(dirent->read_bytes < dirent->parent->file_size)
             {
                 LOG("DIR: Reading next block %d parent %s\n", dirent->next_block, dirent->parent->file_name.c_str());
@@ -198,7 +199,6 @@ again:
                 dirent->next_block++;
                 goto again;
             }
-            dirent->next = NULL;
             return NULL;
         }
     }
@@ -321,7 +321,7 @@ lloff_t Ext2Partition::extent_binarysearch(EXT4_EXTENT_HEADER *header, lloff_t l
             if((lbn >= extent->ee_block) &&
                (lbn < (extent->ee_block + extent->ee_len)))
             {
-                physical_block = ext_to_block(extent);
+                physical_block = ext_to_block(extent) + lbn;
                 physical_block = physical_block - (lloff_t)extent->ee_block;
                 if(isallocated)
                     delete [] header;
@@ -336,7 +336,7 @@ lloff_t Ext2Partition::extent_binarysearch(EXT4_EXTENT_HEADER *header, lloff_t l
     index = EXT_FIRST_INDEX(header);
     for(int i = 0; i < header->eh_entries; i++)
     {
-        LOG("INDEX: Block: %d Leaf: %d \n", index->ei_block, index->ei_leaf_lo);
+//        LOG("INDEX: Block: %d Leaf: %d \n", index->ei_block, index->ei_leaf_lo);
         if(lbn >= index->ei_block)
         {
             block = idx_to_block(index);

@@ -34,6 +34,7 @@
 #include "ext2read.h"
 #include "ext2properties.h"
 #include "ext2about.h"
+#include "ext2copyfile.h"
 
 namespace Ui {
     class Ext2Explore;
@@ -52,6 +53,7 @@ private:
     Ui::Ext2Explore *ui;
     Ext2Properties property;
     Ext2About about;
+    Ext2CopyFile *copyfile;
 
     QItemSelectionModel *selectionModel;
     QStandardItemModel *filemodel;

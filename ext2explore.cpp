@@ -298,11 +298,11 @@ void Ext2Explore::on_action_Save_triggered()
     {
         filename = QFileDialog::getSaveFileName(this, tr("Save File/Folder"),
                                 QString(file->file_name.c_str()),
-                                tr("All Files (*.*)"));
+                                tr("All Files (*)"));
     }
     if(filename.isEmpty())
         return;
 
-    Ext2CopyFile cp(file, filename);
-    cp.start_copy();
+    copyfile = new Ext2CopyFile(file, filename);
+    copyfile->start_copy();
 }

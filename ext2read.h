@@ -30,11 +30,13 @@
 
 #include <list>
 #include <string>
+#include <QCache>
 
 #include "platform.h"
 #include "ext2fs.h"
 #include "lvm.h"
 
+#define MAX_CACHE_SIZE          500
 #define INVALID_TABLE                   3
 #define FILE_TYPE_PARTITON		0x7E
 #define FILE_TYPE_DIR			2
@@ -128,20 +130,6 @@ public:
     bool onview;
 };
 
-struct block_hint {
-    uint32_t *ind;
-    uint32_t *dind;
-    uint32_t *tind;
-    uint32_t ind_hint;
-    uint32_t dind_hint;
-    uint32_t tind_hint;
-};
-
-struct extent_hint {
-    EXT4_EXTENT_HEADER *header;
-    lloff_t hint;
-};
-
 typedef struct ext2dirent {
     EXT2_DIR_ENTRY *next;
     EXT2_DIR_ENTRY *dirbuf;
@@ -165,9 +153,8 @@ class Ext2Partition {
     char *inode_buffer;         // buffer to cache last used block of inodes
     lloff_t last_block;          // block number of the last inode block read
     Ext2File *root;
-    struct block_hint hint;     // used for indirect addressing inodes
-    struct extent_hint exthint;         // used for extent based inodes
-
+    QCache <lloff_t , char > buffercache; //LRU based cache for blocks
+    
     int ext2_readblock(lloff_t blocknum, void *buffer);
     uint32_t fileblock_to_logical(EXT2_INODE *ino, uint32_t lbn);
     lloff_t extent_to_logical(EXT2_INODE *ino, lloff_t lbn);

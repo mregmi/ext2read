@@ -28,10 +28,6 @@ protected:
 public:
     Ext2CopyProcess(Ext2File *parent, QString &dest);
     ~Ext2CopyProcess();
-public:
-    QString curfile;
-    QString curfrom, curto;
-    int curcopied, curtotal;
 
 public slots:
     void slot_cancelprocess();

@@ -10,7 +10,7 @@ Ext2Properties::Ext2Properties(QWidget *parent)
 
 void Ext2Properties::set_properties(Ext2File *file)
 {
-    uint32_t sizeblock;
+    lloff_t sizeblock;
     uint16_t mode = file->inode.i_mode;
     QString filename(file->file_name.c_str());
     QString  sizestr;
@@ -21,28 +21,28 @@ void Ext2Properties::set_properties(Ext2File *file)
 
     properties->typeval->setText(get_type_string(file->file_type));
 
-    sizeblock = ((file->inode.i_size + file->partition->get_blocksize() - 1) /
+    sizeblock = ((file->file_size + file->partition->get_blocksize() - 1) /
                  file->partition->get_blocksize()) * file->partition->get_blocksize();
-    if(file->inode.i_size < 1024)
+    if(file->file_size < 1024)
     {
 
-        sizestr = QString("%1 Bytes").arg(file->inode.i_size);
+        sizestr = QString("%1 Bytes").arg(file->file_size);
         szstrblock = QString("%1 Bytes").arg(sizeblock);
 
     }
-    else if ((file->inode.i_size >= 1024) && (file->inode.i_size < (1024 * 1024)))
+    else if ((file->file_size >= 1024) && (file->file_size < (1024 * 1024)))
     {
-        sizestr = QString("%1 KB (%L2 Bytes)").arg((double)file->inode.i_size/1024, 0, 'g', 3).arg(file->inode.i_size);
+        sizestr = QString("%1 KB (%L2 Bytes)").arg((double)file->file_size/1024, 0, 'g', 3).arg(file->file_size);
         szstrblock = QString("%1 KB (%L2 Bytes)").arg((double)sizeblock/1024, 0, 'g', 3).arg(sizeblock);
     }
-    else if ((file->inode.i_size >= (1024 * 1024)) && (file->inode.i_size < (1024 * 1024 * 1024)))
+    else if ((file->file_size >= (1024 * 1024)) && (file->file_size < (1024 * 1024 * 1024)))
     {
-        sizestr = QString("%1 MB (%L2 Bytes)").arg((double)file->inode.i_size/(1024 * 1024), 0, 'g', 3).arg(file->inode.i_size);
+        sizestr = QString("%1 MB (%L2 Bytes)").arg((double)file->file_size/(1024 * 1024), 0, 'g', 3).arg(file->file_size);
         szstrblock = QString("%1 MB (%L2 Bytes)").arg((double)sizeblock/(1024 * 1024), 0, 'g', 3).arg(sizeblock);
     }
-    else if (file->inode.i_size >= (1024 * 1024 *1024))
+    else if (file->file_size >= (1024 * 1024 *1024))
     {
-        sizestr = QString("%1 GB (%L2 Bytes)").arg((double)file->inode.i_size/(1024 * 1024 * 1024), 0, 'g', 3).arg(file->inode.i_size);
+        sizestr = QString("%1 GB (%L2 Bytes)").arg((double)file->file_size/(1024 * 1024 * 1024), 0, 'g', 3).arg(file->file_size);
         szstrblock = QString("%1 GB (%L2 Bytes)").arg((double)sizeblock/(1024 * 1024 * 1024), 0, 'g', 3).arg(sizeblock);
     }
 

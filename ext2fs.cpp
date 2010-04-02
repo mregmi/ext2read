@@ -219,6 +219,10 @@ Ext2File *Ext2Partition::read_dir(EXT2DIRENT *dirent)
         }
     }
 
+    if(dirent->parent->inode.i_flags & EXT2_BTREE_FL)
+    {
+        LOG("Htree Indexing used \n");
+    }
     dirent->read_bytes += dirent->next->rec_len;
     filename.assign(dirent->next->name, dirent->next->name_len);
     if((filename.compare(".") == 0) ||
@@ -289,7 +293,7 @@ Ext2File *Ext2Partition::read_inode(uint32_t inum)
 
     //LOG("BLKNUM is %d, inode_index %d\n", file->inode.i_size, inode_index);
     file->inode_num = inum;
-    file->file_size = src->i_size;  // FIXME: Larger files than 2 GB
+    file->file_size = (lloff_t) src->i_size | ((lloff_t) src->i_size_high << 32);
     file->partition = (Ext2Partition *)this;
     file->onview = false;
 

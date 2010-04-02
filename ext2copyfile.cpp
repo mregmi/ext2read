@@ -29,6 +29,8 @@ void Ext2CopyFile::start_copy()
             this, SLOT(slot_updateui(QString&,QString&,QString&,int,int)));
     QObject::connect(proc, SIGNAL(sig_copydone()), this, SLOT(slot_copydone()));
     QObject::connect(this, SIGNAL(signal_cancelprocess()), proc, SLOT(slot_cancelprocess()));
+    QObject::connect(this, SIGNAL(accepted()), proc, SLOT(slot_cancelprocess()));
+    QObject::connect(this, SIGNAL(rejected()), proc, SLOT(slot_cancelprocess()));
     this->show();
     proc->start();
 }
@@ -144,9 +146,8 @@ bool Ext2CopyProcess::copy_file(QString &destfile, Ext2File *srcfile)
             return false;
         }
         filetosave->write(buffer, blksize);
-        this->curcopied = blkindex;
-        this->curtotal = blocks;
-        emit sig_updateui(qsrc, destfile, filename, (int)blkindex, (int)blocks);
+        if((blkindex % 10) == 0)
+            emit sig_updateui(qsrc, destfile, filename, (int)blkindex, (int)blocks);
     }
 
     extra = srcfile->file_size % blksize;

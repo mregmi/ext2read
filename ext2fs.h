@@ -217,7 +217,8 @@ typedef struct tagEXT2_INODE
     uint32_t	i_block[EXT2_N_BLOCKS];/* Pointers to blocks */
     uint32_t	i_generation;	/* File version (for NFS) */
     uint32_t	i_file_acl;		/* File ACL */
-    uint32_t	i_dir_acl;		/* Directory ACL */
+//    uint32_t	i_dir_acl;		/* Directory ACL */
+    uint32_t    i_size_high;            /* This is used store the high 32 bit of file size in large files */
     uint32_t	i_faddr;		/* Fragment address */
     union {
         struct {

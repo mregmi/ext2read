@@ -14,13 +14,7 @@ SOURCES += main.cpp \
     ext2properties.cpp \
     ext2about.cpp \
     ext2copyfile.cpp
-HEADERS += ext2explore.h \
-    ../platform.h \
-    ../parttypes.h \
-    ../lvm.h \
-    ../ext2read.h \
-    ../ext2fs.h \
-    platform.h \
+HEADERS += platform.h \
     parttypes.h \
     lvm.h \
     ext2read.h \

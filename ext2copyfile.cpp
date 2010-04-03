@@ -23,6 +23,10 @@ Ext2CopyFile::~Ext2CopyFile()
 
 void Ext2CopyFile::start_copy()
 {
+    if(!EXT2_S_ISREG(file->inode.i_mode) &&
+       !EXT2_S_ISDIR(file->inode.i_mode))
+        return ;
+
     proc = new Ext2CopyProcess(file, filename);
     qRegisterMetaType<QString>("QString&");
     QObject::connect(proc, SIGNAL(sig_updateui(QString&,QString&,QString&,int,int)),

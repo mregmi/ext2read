@@ -207,7 +207,7 @@ Ext2File *Ext2Partition::read_dir(EXT2DIRENT *dirent)
             dirent->next = NULL;
             if(dirent->read_bytes < dirent->parent->file_size)
             {
-                LOG("DIR: Reading next block %d parent %s\n", dirent->next_block, dirent->parent->file_name.c_str());
+                //LOG("DIR: Reading next block %d parent %s\n", dirent->next_block, dirent->parent->file_name.c_str());
                 ret = read_data_block(&dirent->parent->inode, dirent->next_block, dirent->dirbuf);
                 if(ret < 0)
                     return NULL;
@@ -219,10 +219,6 @@ Ext2File *Ext2Partition::read_dir(EXT2DIRENT *dirent)
         }
     }
 
-    if(dirent->parent->inode.i_flags & EXT2_BTREE_FL)
-    {
-        LOG("Htree Indexing used \n");
-    }
     dirent->read_bytes += dirent->next->rec_len;
     filename.assign(dirent->next->name, dirent->next->name_len);
     if((filename.compare(".") == 0) ||

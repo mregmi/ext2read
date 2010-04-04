@@ -78,7 +78,7 @@ void Ext2Explore::delete_children(QStandardItem *parent)
     QVariant fileData;
     QStandardItem *item;
     Ext2File *file;
-    QByteArray ba;
+    //QByteArray ba;
 
     if(!parent->hasChildren())
         return;
@@ -89,9 +89,9 @@ void Ext2Explore::delete_children(QStandardItem *parent)
         item = parent->child(i);
         if(!item)
             continue;
-        ba = item->text().toAscii();
-        const char *c_str2 = ba.data();
-        LOG("Deleting %s\n", c_str2);
+        //ba = item->text().toAscii();
+        //const char *c_str2 = ba.data();
+        //LOG("Deleting %s\n", c_str2);
 
         delete_children(item);
         fileData = item->data(Qt::UserRole);
@@ -163,6 +163,10 @@ void Ext2Explore::changeEvent(QEvent *e)
 
 void Ext2Explore::on_action_Exit_triggered()
 {
+    delete ui;
+    delete filemodel;
+    delete app;
+
     close();
 }
 
@@ -236,7 +240,7 @@ void Ext2Explore::on_action_item_dbclicked(const QModelIndex &index)
 
     part = parentFile->partition;
 
-    LOG("Opened file %s\n",parentFile->file_name.c_str());
+    //LOG("Opened file %s\n",parentFile->file_name.c_str());
     dir = part->open_dir(parentFile);
     while((files = part->read_dir(dir)) != NULL)
     {

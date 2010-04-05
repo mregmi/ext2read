@@ -36,7 +36,7 @@
 #define  FAT32	0x0c
 #define  NTFS	0x07
 #define  EXT2	0x83
-#define  LVM	0x8e
+#define  LINUX_LVM	0x8e
 #define  SWAP	0x82
 #define	 RAID	0xfd
 #define EXTENDED	0x05

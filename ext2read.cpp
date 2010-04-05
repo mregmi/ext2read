@@ -27,6 +27,7 @@
 #include "platform.h"
 #include "partition.h"
 #include "parttypes.h"
+#include "lvm.h"
 
 
 
@@ -117,10 +118,11 @@ int Ext2Read::scan_ebr(FileHandle handle, lloff_t base, int sectsize, int disk)
             }
         }
 
-        if(part->sys_ind == LVM)
+        if(part->sys_ind == LINUX_LVM)
         {
             LOG("LVM Physical Volume found disk %d partition %d\n", disk, logical);
-            scan_lvm(handle,get_start_sect(part)+ ebrBase + ebr2);
+            LVM lvm(handle, get_start_sect(part)+ ebrBase + ebr2);
+            lvm.scan_pv();
         }
 
         part1 = pt_offset(sector, 1);
@@ -189,10 +191,11 @@ int Ext2Read::scan_partitions(char *path, int diskno)
                 }
             }
 
-            if(part->sys_ind == LVM)
+            if(part->sys_ind == LINUX_LVM)
             {
                 LOG("LVM Physical Volume found disk %d partition %d\n", diskno, i);
-                scan_lvm(handle, get_start_sect(part));
+                LVM lvm(handle, get_start_sect(part));
+                lvm.scan_pv();
             }
             else if((part->sys_ind == 0x05) || (part->sys_ind == 0x0f))
             {

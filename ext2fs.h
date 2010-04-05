@@ -324,14 +324,4 @@ static inline uint64_t idx_to_block(EXT4_EXTENT_IDX *idx)
     return block;
 }
 
-
-// HTREE support coming soon
-struct fake_dirent
-{
-    uint16_t inode;
-    uint16_t rec_len;
-    uint8_t name_len;
-    uint8_t file_type;
-};
-
 #endif

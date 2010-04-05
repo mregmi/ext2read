@@ -25,31 +25,40 @@
 
 #include "ext2read.h"
 #include "lvm.h"
-#include "partition.h"
 
 
 LVM::LVM(FileHandle handle, lloff_t offset)
 {
-    pv = new struct pv_metadata;
+//    label = new PV_LABEL_HEADER;
 
+    pv_handle = handle;
+    pv_offset = offset;
 }
 
 LVM::~LVM()
 {
-    delete pv;
+    //delete label;
 }
 
-int scan_lvm(FileHandle handle, lloff_t offset)
+int LVM::scan_pv()
 {
-        char *data;
-        int ret;
+    int ret;
+    char *config;
+    PV_LABEL_HEADER *header;
+    PV_LABEL *label;
+    char buffer[512];
 
-        data = (char *)malloc(2046);
+    ret = read_disk(pv_handle, buffer, pv_offset + 1, 1, 512);
 
-         ret = read_disk(handle, data, offset + 1, 3, 512);
-         data[1023] = 0;
-         LOG("PV Metadata \n%s", data);
-         free(data);
-        return 0;
+    header = (PV_LABEL_HEADER *) &buffer[0];
+    LOG("PV Metadata: %s %UUID=%s offset %d \n",header->pv_name, header->pv_uuid, header->pv_offset_xl);
+
+    read_disk(pv_handle, buffer, (header->pv_labeloffset/512) + 4, 1, 512);
+    label = (PV_LABEL *) &buffer[0];
+
+    read_disk(pv_handle, buffer, label->pv_offset_low + label->pv_offset_high, 1, 512);
+    LOG("\n%s", buffer);
+
+    return 0;
 }
 

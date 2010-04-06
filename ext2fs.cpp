@@ -1,6 +1,6 @@
 /**
  * Ext2read
- * File: partition.cpp
+ * File: ext2fs.cpp
  **/
 /**
  * Copyright (C) 2005 2010 by Manish Regmi   (regmi dot manish at gmail.com)

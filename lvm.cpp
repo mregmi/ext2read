@@ -1,9 +1,9 @@
 /**
  * Ext2read
- * File: lvm.c
+ * File: lvm.cpp
  **/
 /**
- * Copyright (C) 2006 by Manish Regmi   (regmi dot manish at gmail.com)
+ * Copyright (C) 2006 2010 by Manish Regmi   (regmi dot manish at gmail.com)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,21 +23,18 @@
 
 #include <stdlib.h>
 
-#include "ext2read.h"
 #include "lvm.h"
 
 
 LVM::LVM(FileHandle handle, lloff_t offset)
 {
-//    label = new PV_LABEL_HEADER;
-
     pv_handle = handle;
     pv_offset = offset;
 }
 
 LVM::~LVM()
 {
-    //delete label;
+
 }
 
 int LVM::scan_pv()
@@ -47,27 +44,40 @@ int LVM::scan_pv()
     PV_LABEL *label;
     lloff_t sector;
     int length;
-    char buffer[512];
+    char buffer[SECTOR_SIZE];
+    char *metadata;
 
-    metadata = NULL;
     sector = pv_offset + 1;
-    ret = read_disk(pv_handle, buffer, sector, 1, 512);
+    ret = read_disk(pv_handle, buffer, sector, 1, SECTOR_SIZE);
 
     header = (PV_LABEL_HEADER *) &buffer[0];
+    if(strncmp(header->pv_name, "LABELONE", LVM_SIGLEN) != 0)
+    {
+        LOG("Invalid label. The partition is not LVM2 volume\n");
+        return -1;
+    }
+
     LOG("PV Metadata: %s %UUID=%s offset %d \n",header->pv_name, header->pv_uuid, header->pv_labeloffset);
 
-    sector = (header->pv_labeloffset/512) + pv_offset;
-    read_disk(pv_handle, buffer, sector, 1, 512);
+    sector = (header->pv_labeloffset/SECTOR_SIZE) + pv_offset;
+    read_disk(pv_handle, buffer, sector, 1, SECTOR_SIZE);
     label = (PV_LABEL *) &buffer[0];
 
-    sector = pv_offset + ((label->pv_offset_low + label->pv_offset_high)/512);
-    length = (label->pv_length + 511)/512;
-    metadata = new char[length * 512];
-    read_disk(pv_handle, metadata, sector, length, 512);
+    sector = pv_offset + ((label->pv_offset_low + label->pv_offset_high)/SECTOR_SIZE);
+    length = (label->pv_length + SECTOR_SIZE - 1)/SECTOR_SIZE;
+    metadata = new char[length * SECTOR_SIZE];
+    read_disk(pv_handle, metadata, sector, length, SECTOR_SIZE);
 
-    metadata[(length * 512) - 1] = 0;
+    metadata[label->pv_length] = 0;
     LOG("\n%s", metadata);
+    pv_metadata.assign(metadata, label->pv_length);
 
+    delete [] metadata;
     return 0;
+}
+
+int LVM::parse_metadata()
+{
+
 }
 

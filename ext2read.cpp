@@ -20,6 +20,10 @@
  * Free Software Foundation, Inc.,
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  **/
+/**
+  * This file contains implementation of scanning and retrieving
+  * partition information. For now we only support MBR style partitions.
+  **/
 
 #include <dirent.h>
 

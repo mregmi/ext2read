@@ -3,7 +3,7 @@
  * File: lvm.h
  **/
 /**
- * Copyright (C) 2006 by Manish Regmi   (regmi dot manish at gmail.com)
+ * Copyright (C) 2006 2010 by Manish Regmi   (regmi dot manish at gmail.com)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,6 @@
 #define __LVM_H
 
 #include <stdint.h>
-
 #include "ext2read.h"
 
 #define LVM_SIGLEN	8
@@ -42,7 +41,6 @@ typedef struct pv_label_header {
         char        pv_uuid[UUID_LEN];
         uint64_t    pv_unknown1[5];             // documentation lacks for lvm
         uint64_t    pv_labeloffset;             // location of the label
-//        char        padding[400];
 } __attribute__ ((__packed__)) PV_LABEL_HEADER;
 
 typedef struct pv_label {
@@ -53,19 +51,19 @@ typedef struct pv_label {
     uint64_t        unknown2;
     uint64_t        pv_offset_high;
     uint64_t        pv_length;
-//    char            padding[464];
 } __attribute__ ((__packed__)) PV_LABEL;
 
 class LVM {
 private:
     FileHandle pv_handle;
     lloff_t pv_offset;
-    char *metadata;
+    std::string pv_metadata;
 public:
     LVM(FileHandle handle, lloff_t offset);
     ~LVM();
 
     int scan_pv();
+    int parse_metadata();
 };
 
 #ifdef __cplusplus

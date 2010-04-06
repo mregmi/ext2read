@@ -60,7 +60,7 @@ class LVM {
 private:
     FileHandle pv_handle;
     lloff_t pv_offset;
-
+    char *metadata;
 public:
     LVM(FileHandle handle, lloff_t offset);
     ~LVM();

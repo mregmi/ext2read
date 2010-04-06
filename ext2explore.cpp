@@ -183,6 +183,7 @@ void Ext2Explore::on_actionP_roperties_triggered()
         fileData = item->data(Qt::UserRole);
         file = (Ext2File *) fileData.value<void *>();
         property.set_properties(file);
+        break;  // FIXME: Getting the first selected item only.
     }
     property.show();
 }
@@ -234,10 +235,13 @@ void Ext2Explore::on_action_item_dbclicked(const QModelIndex &index)
     fileData = parentItem->data(Qt::UserRole);
     parentFile = (Ext2File *) fileData.value<void *>();
 
-     ui->list->setRootIndex(index);
     if(parentFile->onview)
         return;
 
+    if(!EXT2_S_ISDIR(parentFile->inode.i_mode))
+        return;
+
+    ui->list->setRootIndex(index);
     part = parentFile->partition;
 
     //LOG("Opened file %s\n",parentFile->file_name.c_str());

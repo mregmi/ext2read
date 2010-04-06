@@ -43,21 +43,30 @@ LVM::~LVM()
 int LVM::scan_pv()
 {
     int ret;
-    char *config;
     PV_LABEL_HEADER *header;
     PV_LABEL *label;
+    lloff_t sector;
+    int length;
     char buffer[512];
 
-    ret = read_disk(pv_handle, buffer, pv_offset + 1, 1, 512);
+    metadata = NULL;
+    sector = pv_offset + 1;
+    ret = read_disk(pv_handle, buffer, sector, 1, 512);
 
     header = (PV_LABEL_HEADER *) &buffer[0];
-    LOG("PV Metadata: %s %UUID=%s offset %d \n",header->pv_name, header->pv_uuid, header->pv_offset_xl);
+    LOG("PV Metadata: %s %UUID=%s offset %d \n",header->pv_name, header->pv_uuid, header->pv_labeloffset);
 
-    read_disk(pv_handle, buffer, (header->pv_labeloffset/512) + 4, 1, 512);
+    sector = (header->pv_labeloffset/512) + pv_offset;
+    read_disk(pv_handle, buffer, sector, 1, 512);
     label = (PV_LABEL *) &buffer[0];
 
-    read_disk(pv_handle, buffer, label->pv_offset_low + label->pv_offset_high, 1, 512);
-    LOG("\n%s", buffer);
+    sector = pv_offset + ((label->pv_offset_low + label->pv_offset_high)/512);
+    length = (label->pv_length + 511)/512;
+    metadata = new char[length * 512];
+    read_disk(pv_handle, metadata, sector, length, 512);
+
+    metadata[(length * 512) - 1] = 0;
+    LOG("\n%s", metadata);
 
     return 0;
 }

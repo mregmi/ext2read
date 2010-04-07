@@ -22,6 +22,7 @@
  **/
 
 #include <stdlib.h>
+#include <sstream>
 
 #include "lvm.h"
 
@@ -71,13 +72,30 @@ int LVM::scan_pv()
     metadata[label->pv_length] = 0;
     LOG("\n%s", metadata);
     pv_metadata.assign(metadata, label->pv_length);
-
+    parse_metadata();
     delete [] metadata;
     return 0;
 }
 
 int LVM::parse_metadata()
 {
+    char delim;
+    char str[128];
+    char uuid[UUID_LEN];
+    int num;
 
+    stringstream metastream(pv_metadata);
+
+    metastream >> str >> delim >> str >> delim;
+    metastream >> uuid >> delim;
+    LOG("VolumeGroup: UUID: %s \n", uuid);
+    metastream >> str >> delim >> num >> delim;
+    LOG("Sequence: %d\n", num);
+    metastream >> str >> delim >> str >> delim;
+    metastream >> str >> delim >> str >> delim;
+    metastream >> str >> delim >> num >> delim;
+    LOG("Extent Size: %d\n", num);
+
+    return 0;
 }
 

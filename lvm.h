@@ -66,6 +66,40 @@ public:
     int parse_metadata();
 };
 
+class VolumeGroup;
+
+class PhysicalVolume {
+    char uuid[UUID_LEN];
+    lloff_t dev_size;
+    uint32_t pe_start, pe_count;
+};
+
+class lv_segment {
+    uint32_t start_extent;
+    uint32_t extent_count;
+    list <PhysicalVolume *> pvolumes;
+};
+
+class LogicalVolume {
+    char uuid[UUID_LEN];
+    int segment_count;
+    VolumeGroup *this_group;
+};
+
+class VolumeGroup {
+private:
+    char uuid[UUID_LEN];
+    int extent_size;
+    int seqno;
+    int max_lv, max_pv;
+    list <PhysicalVolume *> pvolumes;
+    list <LogicalVolume *> lvolumes;
+
+public:
+    PhysicalVolume();
+    ~PhysicalVolume();
+};
+
 #ifdef __cplusplus
 extern "C"{
 #endif

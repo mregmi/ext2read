@@ -53,7 +53,7 @@ private:
     Ui::Ext2Explore *ui;
     Ext2Properties property;
     Ext2About about;
-    Ext2CopyFile *copyfile;
+    Ext2CopyFile copyfile;
 
     QItemSelectionModel *selectionModel;
     QStandardItemModel *filemodel;

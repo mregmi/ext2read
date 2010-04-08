@@ -235,13 +235,13 @@ void Ext2Explore::on_action_item_dbclicked(const QModelIndex &index)
     fileData = parentItem->data(Qt::UserRole);
     parentFile = (Ext2File *) fileData.value<void *>();
 
-    if(parentFile->onview)
-        return;
-
     if(!EXT2_S_ISDIR(parentFile->inode.i_mode))
         return;
 
     ui->list->setRootIndex(index);
+    if(parentFile->onview)
+        return;
+
     part = parentFile->partition;
 
     //LOG("Opened file %s\n",parentFile->file_name.c_str());
@@ -311,6 +311,7 @@ void Ext2Explore::on_action_Save_triggered()
     if(filename.isEmpty())
         return;
 
-    copyfile = new Ext2CopyFile(file, filename);
-    copyfile->start_copy();
+    copyfile.set_file(file);
+    copyfile.set_name(filename);
+    copyfile.start_copy();
 }

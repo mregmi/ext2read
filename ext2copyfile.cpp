@@ -26,6 +26,11 @@ Ext2CopyFile::Ext2CopyFile(Ext2File *parent, QString &dest)
 {
     filename = dest;
     file = parent;
+    Ext2CopyFile();
+}
+
+Ext2CopyFile::Ext2CopyFile()
+{
     cancelOperation = false;
 
     progress = new Ui::ProgressDialog();
@@ -37,7 +42,6 @@ Ext2CopyFile::Ext2CopyFile(Ext2File *parent, QString &dest)
 Ext2CopyFile::~Ext2CopyFile()
 {
     delete progress;
-    delete proc;
 }
 
 void Ext2CopyFile::start_copy()
@@ -94,7 +98,9 @@ void Ext2CopyFile::slot_updateui(QString &file, QString &from, QString &to, int 
 
 void Ext2CopyFile::slot_copydone()
 {
-    delete this;
+    //delete this;
+    delete proc;
+    this->hide();
 }
 
 Ext2CopyProcess::Ext2CopyProcess(Ext2File *parent, QString &dest)

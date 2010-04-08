@@ -68,8 +68,10 @@ class Ext2CopyFile : public QDialog
 
 public:
     Ext2CopyFile(Ext2File *parent, QString &dest);
+    Ext2CopyFile();
     ~Ext2CopyFile();
-
+    void set_file(Ext2File *sfile) { file = sfile; }
+    void set_name(QString &name) { filename = name; }
     void start_copy();
 
 private:

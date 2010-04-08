@@ -77,7 +77,7 @@ class PhysicalVolume {
 class lv_segment {
     uint32_t start_extent;
     uint32_t extent_count;
-    list <PhysicalVolume *> pvolumes;
+    std::list <PhysicalVolume *> pvolumes;
 };
 
 class LogicalVolume {
@@ -92,12 +92,12 @@ private:
     int extent_size;
     int seqno;
     int max_lv, max_pv;
-    list <PhysicalVolume *> pvolumes;
-    list <LogicalVolume *> lvolumes;
+    std::list <PhysicalVolume *> pvolumes;
+    std::list <LogicalVolume *> lvolumes;
 
 public:
-    PhysicalVolume();
-    ~PhysicalVolume();
+    VolumeGroup();
+    ~VolumeGroup();
 };
 
 #ifdef __cplusplus

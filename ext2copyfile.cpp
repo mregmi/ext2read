@@ -65,8 +65,8 @@ void Ext2CopyFile::start_copy()
 bool Ext2CopyFile::showMessageBox()
 {
     QMessageBox msgBox;
-    msgBox.setText("You pressed the cancel button on the progress dialog box.");
-    msgBox.setInformativeText("Are you sure you want to cancel copying?");
+    msgBox.setText(QString::fromAscii("You pressed the cancel button on the progress dialog box."));
+    msgBox.setInformativeText(QString::fromAscii("Are you sure you want to cancel copying?"));
     msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
     msgBox.setDefaultButton(QMessageBox::No);
     int ret = msgBox.exec();
@@ -112,6 +112,7 @@ Ext2CopyProcess::Ext2CopyProcess(Ext2File *parent, QString &dest)
     buffer = new char [blksize];
     filetosave = NULL;
     cancelOperation = false;
+    codec = QTextCodec::codecForName("utf-8");
 }
 
 Ext2CopyProcess::~Ext2CopyProcess()
@@ -145,7 +146,7 @@ bool Ext2CopyProcess::copy_file(QString &destfile, Ext2File *srcfile)
 {
     lloff_t blocks, blkindex;
     QString qsrc;
-    QString nullstr("");
+    QString nullstr = QString::fromAscii("");
     QByteArray ba;
     int extra;
     int ret;
@@ -160,7 +161,7 @@ bool Ext2CopyProcess::copy_file(QString &destfile, Ext2File *srcfile)
     //const char *c_str2 = ba.data();
 
     //LOG("Copying file %s as %s\n", srcfile->file_name.c_str(), c_str2);
-    qsrc = srcfile->file_name.c_str();
+    qsrc = codec->toUnicode(srcfile->file_name.c_str());
     blocks = srcfile->file_size / blksize;
     for(blkindex = 0; blkindex < blocks; blkindex++)
     {
@@ -209,7 +210,7 @@ bool Ext2CopyProcess::copy_folder(QString &path, Ext2File *parent)
     if(!EXT2_S_ISDIR(parent->inode.i_mode))
         return false;
 
-    dir.mkdir(QString(parent->file_name.c_str()));
+    dir.mkdir(codec->toUnicode(parent->file_name.c_str()));
     ba = path.toAscii();
     const char *c_str2 = ba.data();
     LOG("Creating Folder %s as %s\n", parent->file_name.c_str(), c_str2);
@@ -218,8 +219,8 @@ bool Ext2CopyProcess::copy_folder(QString &path, Ext2File *parent)
     while((child = part->read_dir(dirent)) != NULL)
     {
         filetosave = rootname;
-        filetosave.append("/");
-        filetosave.append(parent->file_name.c_str());
+        filetosave.append(QString::fromAscii("/"));
+        filetosave.append(codec->toUnicode(parent->file_name.c_str()));
         if(EXT2_S_ISDIR(child->inode.i_mode))
         {
 
@@ -237,8 +238,8 @@ bool Ext2CopyProcess::copy_folder(QString &path, Ext2File *parent)
             return false;
         }
 
-        filetosave.append("/");
-        filetosave.append(child->file_name.c_str());
+        filetosave.append(QString::fromAscii("/"));
+        filetosave.append(codec->toUnicode(child->file_name.c_str()));
         ret = copy_file(filetosave, child);
         if((ret == false) && (cancelOperation == true))
         {

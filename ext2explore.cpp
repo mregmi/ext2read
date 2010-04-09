@@ -63,6 +63,7 @@ Ext2Explore::Ext2Explore(QWidget *parent) :
     connect(ui->list, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(on_action_item_dbclicked(const QModelIndex &)));
     connect(this, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(ext2_context_menu(const QPoint &)));
 
+    codec = QTextCodec::codecForName("utf-8");
 }
 
 Ext2Explore::~Ext2Explore()
@@ -110,6 +111,9 @@ void Ext2Explore::init_root_fs()
     void *ptr;
 
     parts = app->get_partitions();
+    item = new QStandardItem(QIcon(QString::fromAscii(":/icons/resource/disk.png")),
+                             tr("default"));
+    root->appendRow(item);
     for(i = parts.begin(); i != parts.end(); i++)
     {
         temp = (*i);
@@ -118,8 +122,8 @@ void Ext2Explore::init_root_fs()
         if(temp->onview)
             continue;
 
-        item = new QStandardItem(QIcon(":/icons/resource/disk.png"),
-                                 QString(temp->get_linux_name().c_str()));
+        item = new QStandardItem(QIcon(QString::fromAscii(":/icons/resource/disk.png")),
+                                 QString::fromStdString(temp->get_linux_name()));
         if(!temp->get_root())
         {
             LOG("Root folder for %s is invalid. \n", temp->get_linux_name().c_str());
@@ -142,9 +146,9 @@ QString Ext2Explore::handle_mime(string file, uint16_t mode)
     QString str;
 
     if(EXT2_S_ISDIR(mode))
-        str = ":/icons/resource/file_folder.png";
+        str = QString::fromAscii(":/icons/resource/file_folder.png");
     else
-        str = ":/icons/resource/file_unknown.png";
+        str = QString::fromAscii(":/icons/resource/file_unknown.png");
 
     return str;
 }
@@ -208,7 +212,7 @@ void Ext2Explore::on_actionOpen_Image_triggered()
     QString filename;
 
     filename = QFileDialog::getOpenFileName(this,
-         tr("Open Disk Image"), "", tr("All Disk Image Files (*)"));
+               tr("Open Disk Image"), QString::fromAscii(""), tr("All Disk Image Files (*)"));
     //LOG("Opening file %s as a disk image. \n", filename.toAscii());
 
     result = app->add_loopback(filename.toAscii());
@@ -251,7 +255,7 @@ void Ext2Explore::on_action_item_dbclicked(const QModelIndex &index)
 //        LOG("Found File %s inode %d \n", files->file_name.c_str(), files->inode_num);
 
         children = new QStandardItem(QIcon(handle_mime(files->file_name, files->inode.i_mode)),
-                                 QString(files->file_name.c_str()));
+                                     codec->toUnicode(files->file_name.c_str()));
         children->setData(qVariantFromValue((void *)files), Qt::UserRole);
         children->setEditable(false);
         parentItem->appendRow(children);
@@ -298,14 +302,14 @@ void Ext2Explore::on_action_Save_triggered()
 
     if(EXT2_S_ISDIR(file->inode.i_mode))
     {
-        filename = QFileDialog::getExistingDirectory(this, tr("Save Folder in"),
-                                "",
+        filename = QFileDialog::getExistingDirectory(this, tr("???? ????"),
+                                QString::fromAscii(""),
                                 QFileDialog::ShowDirsOnly);
     }
     else
     {
         filename = QFileDialog::getSaveFileName(this, tr("Save File/Folder"),
-                                QString(file->file_name.c_str()),
+                                QString::fromStdString(file->file_name),
                                 tr("All Files (*)"));
     }
     if(filename.isEmpty())

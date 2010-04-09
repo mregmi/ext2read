@@ -23,6 +23,7 @@
 #include <QDialog>
 #include <QFile>
 #include <QThread>
+#include <QTextCodec>
 
 #include "ui_ext2progress.h"
 #include "ext2read.h"
@@ -37,6 +38,7 @@ private:
     char *buffer;
     int blksize;
     bool cancelOperation;
+    QTextCodec *codec;
 
     bool copy_folder(QString &path, Ext2File *file);
     bool copy_file(QString &destfile, Ext2File *srcfile);

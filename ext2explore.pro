@@ -3,6 +3,7 @@
 # -------------------------------------------------
 TARGET = ext2explore
 TEMPLATE = app
+DEFINES += QT_NO_CAST_FROM_ASCII QT_NO_CAST_TO_ASCII
 SOURCES += main.cpp \
     ext2explore.cpp \
     ext2read.cpp \

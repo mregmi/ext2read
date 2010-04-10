@@ -125,7 +125,7 @@ int Ext2Read::scan_ebr(FileHandle handle, lloff_t base, int sectsize, int disk)
         if(part->sys_ind == LINUX_LVM)
         {
             LOG("LVM Physical Volume found disk %d partition %d\n", disk, logical);
-            LVM lvm(handle, get_start_sect(part)+ ebrBase + ebr2);
+            LVM lvm(handle, get_start_sect(part)+ ebrBase + ebr2, this);
             lvm.scan_pv();
         }
 
@@ -198,7 +198,7 @@ int Ext2Read::scan_partitions(char *path, int diskno)
             if(part->sys_ind == LINUX_LVM)
             {
                 LOG("LVM Physical Volume found disk %d partition %d\n", diskno, i);
-                LVM lvm(handle, get_start_sect(part));
+                LVM lvm(handle, get_start_sect(part), this);
                 lvm.scan_pv();
             }
             else if((part->sys_ind == 0x05) || (part->sys_ind == 0x0f))

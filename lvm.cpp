@@ -23,14 +23,16 @@
 
 #include <stdlib.h>
 #include <sstream>
+#include <QRegExp>
 
 #include "lvm.h"
 
 
-LVM::LVM(FileHandle handle, lloff_t offset)
+LVM::LVM(FileHandle handle, lloff_t offset, Ext2Read *rd)
 {
     pv_handle = handle;
     pv_offset = offset;
+    ext2read = rd;
 }
 
 LVM::~LVM()
@@ -71,31 +73,58 @@ int LVM::scan_pv()
 
     metadata[label->pv_length] = 0;
     LOG("\n%s", metadata);
-    pv_metadata.assign(metadata, label->pv_length);
+    pv_metadata.append(metadata);
     parse_metadata();
     delete [] metadata;
     return 0;
 }
 
+// NOTE: Do error checking
 int LVM::parse_metadata()
 {
-    char delim;
-    char str[128];
-    char uuid[UUID_LEN];
-    int num;
+    int num, tmpnum;
+    QString volname, suuid;
+    int seq, size;
+    bool ok;
+    QByteArray ba;
 
-    stringstream metastream(pv_metadata);
+    num = pv_metadata.indexOf("{");
+    volname = pv_metadata.left(num - 1);
+    num = pv_metadata.indexOf(QRegExp("[a-zA-Z0-9]*-{1,}[a-zA-Z0-9]*"), 0);
+    if(num > 0)
+    {
+        suuid = pv_metadata.mid(num, 38);
+        suuid.replace("-", "");
+    }
+    num = pv_metadata.indexOf(QRegExp("[0-9]"), num + 38);
+    if(num > 0)
+    {
+        seq = pv_metadata.mid(num, 1).toInt(&ok);
+        if(!ok)
+        {
+            LOG("Cannot Parse LVM Metadata :-( \n");
+            return -1;
+        }
+    }
+    num = pv_metadata.indexOf(QRegExp("[0-9]+"), num + 1);
+    if(num > 0)
+    {
+        size = pv_metadata.mid(num, 4).toInt(&ok);
+        if(!ok)
+        {
+            LOG("Cannot Parse LVM Metadata :-( \n");
+            return -1;
+        }
+    }
 
-    metastream >> str >> delim >> str >> delim;
-    metastream >> uuid >> delim;
-    LOG("VolumeGroup: UUID: %s \n", uuid);
-    metastream >> str >> delim >> num >> delim;
-    LOG("Sequence: %d\n", num);
-    metastream >> str >> delim >> str >> delim;
-    metastream >> str >> delim >> str >> delim;
-    metastream >> str >> delim >> num >> delim;
-    LOG("Extent Size: %d\n", num);
+    /*ba = pv_metadata.toAscii();
+    const char *c_str2 = ba.data();
+    LOG("Group %s\n", c_str2);
 
+    ba = suuid.toAscii();
+    c_str2 = ba.data();
+    LOG("UUID %s\n", c_str2);
+*/
     return 0;
 }
 

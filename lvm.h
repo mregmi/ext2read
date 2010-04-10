@@ -25,6 +25,8 @@
 #define __LVM_H
 
 #include <stdint.h>
+#include <QString>
+
 #include "ext2read.h"
 
 #define LVM_SIGLEN	8
@@ -53,20 +55,23 @@ typedef struct pv_label {
     uint64_t        pv_length;
 } __attribute__ ((__packed__)) PV_LABEL;
 
+class VolumeGroup;
+
 class LVM {
 private:
     FileHandle pv_handle;
     lloff_t pv_offset;
-    std::string pv_metadata;
+    QString pv_metadata;
+    Ext2Read *ext2read;
 public:
-    LVM(FileHandle handle, lloff_t offset);
+    LVM(FileHandle handle, lloff_t offset, Ext2Read *rd);
     ~LVM();
 
     int scan_pv();
     int parse_metadata();
+    VolumeGroup *find_volgroup();
 };
 
-class VolumeGroup;
 
 class PhysicalVolume {
     char uuid[UUID_LEN];
@@ -88,7 +93,7 @@ class LogicalVolume {
 
 class VolumeGroup {
 private:
-    char uuid[UUID_LEN];
+    QString volgroup;
     int extent_size;
     int seqno;
     int max_lv, max_pv;

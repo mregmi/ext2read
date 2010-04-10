@@ -34,7 +34,7 @@
 
 #include "platform.h"
 #include "ext2fs.h"
-#include "lvm.h"
+//#include "lvm.h"
 
 #define MAX_CACHE_SIZE          500
 #define INVALID_TABLE                   3
@@ -181,11 +181,14 @@ public:
     void close_dir(EXT2DIRENT *);
 };
 
+class VolumeGroup;
+
 class Ext2Read {
 private:
     int ndisks;
 
     list <Ext2Partition *> nparts;
+    list <VolumeGroup *> groups;
     int scan_ebr(FileHandle , lloff_t , int , int);
     int scan_partitions(char *path, int);
     void clear_partitions();

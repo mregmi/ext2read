@@ -111,9 +111,6 @@ void Ext2Explore::init_root_fs()
     void *ptr;
 
     parts = app->get_partitions();
-    item = new QStandardItem(QIcon(QString::fromAscii(":/icons/resource/disk.png")),
-                             tr("default"));
-    root->appendRow(item);
     for(i = parts.begin(); i != parts.end(); i++)
     {
         temp = (*i);

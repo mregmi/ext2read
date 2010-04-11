@@ -94,7 +94,8 @@ int LVM::scan_pv()
     }
 
     LOG("PV Metadata: %s %UUID=%s offset %d \n",header->pv_name, header->pv_uuid, header->pv_labeloffset);
-
+    strncpy(uuid, header->pv_uuid, UUID_LEN);
+    uuid[UUID_LEN] = '\0';
     sector = (header->pv_labeloffset/SECTOR_SIZE) + pv_offset;
     read_disk(pv_handle, buffer, sector, 1, SECTOR_SIZE);
     label = (PV_LABEL *) &buffer[0];
@@ -106,7 +107,7 @@ int LVM::scan_pv()
 
     metadata[label->pv_length] = 0;
     LOG("\n%s", metadata);
-    pv_metadata.append(metadata);
+    pv_metadata = QString::fromAscii(metadata, label->pv_length);
     parse_metadata();
     delete [] metadata;
     return 0;
@@ -115,7 +116,7 @@ int LVM::scan_pv()
 // NOTE: Do error checking
 int LVM::parse_metadata()
 {
-    int num, num2;
+    int num, num2, numbase;
     QString volname, suuid;
     int seq, size;
     bool ok;
@@ -173,7 +174,8 @@ int LVM::parse_metadata()
         suuid = pv_metadata.mid(num, 38);
         suuid.replace("-", "");
         num += 38;
-        num = pv_metadata.indexOf("flags", num);
+        numbase = num;
+        num = pv_metadata.indexOf("dev_size", num);
         num = pv_metadata.indexOf(QRegExp("[0-9]+"), num);
         num2 = pv_metadata.indexOf(QRegExp("\\n"), num);
         dev_size = pv_metadata.mid(num, num2-num).toULongLong(&ok);
@@ -183,6 +185,7 @@ int LVM::parse_metadata()
             return -1;
         }
 
+        num = pv_metadata.indexOf("pe_start", numbase);
         num = pv_metadata.indexOf(QRegExp("[0-9]+"), num2);
         num2 = pv_metadata.indexOf(QRegExp("\\n"), num);
         pe_start = pv_metadata.mid(num, num2-num).toUInt(&ok);
@@ -192,6 +195,7 @@ int LVM::parse_metadata()
             return -1;
         }
 
+        num = pv_metadata.indexOf("pe_count", numbase);
         num = pv_metadata.indexOf(QRegExp("[0-9]+"), num2);
         num2 = pv_metadata.indexOf(QRegExp("\\n"), num);
         pe_count = pv_metadata.mid(num, num2-num).toUInt(&ok);
@@ -203,8 +207,11 @@ int LVM::parse_metadata()
 
         PhysicalVolume *pvol;
         pvol = grp->find_physical_volume(suuid);
-        if(!pvol)
-            pvol = grp->add_physical_volume(suuid, dev_size, pe_start, pe_count);
+        num2 = suuid.compare(uuid);
+        if(!pvol && (num2 == 0))
+        {
+            pvol = grp->add_physical_volume(suuid, dev_size, pe_start, pe_count, pv_handle);
+        }
     }
 
     // Parse Logical Volume
@@ -231,7 +238,43 @@ int LVM::parse_metadata()
             LOG("Cannot Parse LVM Metadata (Logical Volume) :-( \n");
             return -1;
         }
+
+        LogicalVolume *lvol;
+        uint32_t start_extent, extent_count;
+        lvol = grp->find_logical_volume(suuid);
+        if(!lvol)
+            lvol = grp->add_logical_volume(suuid, nsegs);
+
+        for(int i = 0; i < nsegs; i++)
+        {
+            num = pv_metadata.indexOf(QRegExp("segment[0-9]+"), num);
+            num += 8;
+            numbase = num;
+            num = pv_metadata.indexOf("start_extent", num);
+            num = pv_metadata.indexOf(QRegExp("[0-9]+"), num);
+            num2 = pv_metadata.indexOf(QRegExp("\\n"), num);
+            start_extent = pv_metadata.mid(num, num2-num).toInt(&ok);
+
+            num = pv_metadata.indexOf("extent_count", numbase);
+            num = pv_metadata.indexOf(QRegExp("[0-9]+"), num);
+            num2 = pv_metadata.indexOf(QRegExp("\\n"), num);
+            extent_count = pv_metadata.mid(num, num2-num).toInt(&ok);
+
+            // Multiple stripes NOT Implemented: we only support linear for now.
+            lv_segment *seg = new lv_segment(start_extent, extent_count);
+            seg->stripe = new struct stripe;
+            seg->stripe->stripe_pv = 0;
+            num = pv_metadata.indexOf(QRegExp("pv[0-9]+"), num);
+            num += 4;
+
+            num = pv_metadata.indexOf(QRegExp("[0-9]+"), num);
+            num2 = pv_metadata.indexOf(QRegExp("\\n"), num);
+            seg->stripe->stripe_start_extent = pv_metadata.mid(num, num2-num).toInt(&ok);
+            seg->pvolumes = NULL;   // we do the segment -> pv mapping later because this pv might not be found yet
+            lvol->segments.push_back(seg);
+        }
     }
+
     return 0;
 }
 
@@ -276,11 +319,11 @@ PhysicalVolume *VolumeGroup::find_physical_volume(QString &id)
     return NULL;
 }
 
-PhysicalVolume *VolumeGroup::add_physical_volume(QString &id, lloff_t devsize, uint32_t start, uint32_t count)
+PhysicalVolume *VolumeGroup::add_physical_volume(QString &id, lloff_t devsize, uint32_t start, uint32_t count, FileHandle file)
 {
     PhysicalVolume *pvol;
 
-    pvol = new PhysicalVolume(id, devsize, start, count);
+    pvol = new PhysicalVolume(id, devsize, start, count, file);
     if(!pvol)
         return NULL;
 
@@ -317,12 +360,13 @@ LogicalVolume *VolumeGroup::add_logical_volume(QString &id, int count)
     return lvol;
 }
 
-PhysicalVolume::PhysicalVolume(QString &id, lloff_t devsize, uint32_t start, uint32_t count)
+PhysicalVolume::PhysicalVolume(QString &id, lloff_t devsize, uint32_t start, uint32_t count, FileHandle file)
 {
     uuid = id;
     dev_size = devsize;
     pe_start = start;
     pe_count = count;
+    handle = file;
 }
 
 LogicalVolume::LogicalVolume(QString &id, int nsegs)

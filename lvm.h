@@ -61,6 +61,7 @@ class LVM {
 private:
     FileHandle pv_handle;
     lloff_t pv_offset;
+    char uuid[UUID_LEN + 1];
     QString pv_metadata;
     Ext2Read *ext2read;
 public:
@@ -75,26 +76,41 @@ public:
 
 
 class PhysicalVolume {
+    FileHandle handle;
     lloff_t dev_size;
     uint32_t pe_start, pe_count;
 public:
     QString uuid;
-    PhysicalVolume(QString &id, lloff_t devsize, uint32_t start, uint32_t count);
+    PhysicalVolume(QString &id, lloff_t devsize, uint32_t start, uint32_t count, FileHandle file);
+};
+
+// Multiple stripes NOT Implemented: we only support linear for now.
+struct stripe {
+    int stripe_pv;
+    uint32_t stripe_start_extent;
 };
 
 class lv_segment {
+public:
     uint32_t start_extent;
     uint32_t extent_count;
-    std::list <PhysicalVolume *> pvolumes;
+    struct stripe *stripe;
+    PhysicalVolume *pvolumes;
+
+    lv_segment(uint32_t start, uint32_t count)
+    {
+        start_extent = start;
+        extent_count = count;
+    }
 };
 
 class LogicalVolume {
     int segment_count;
     VolumeGroup *this_group;
     std::list <PhysicalVolume *> pvolumes;
-    std::list <lv_segment *> segments;
 public:
     QString uuid;
+    std::list <lv_segment *> segments;
 
     LogicalVolume(QString &id, int nsegs);
     ~LogicalVolume();
@@ -114,7 +130,7 @@ public:
     VolumeGroup(QString &id, QString &name, int seq, int size);
     ~VolumeGroup();
     PhysicalVolume *find_physical_volume(QString &id);
-    PhysicalVolume *add_physical_volume(QString &id, lloff_t devsize, uint32_t start, uint32_t count);
+    PhysicalVolume *add_physical_volume(QString &id, lloff_t devsize, uint32_t start, uint32_t count, FileHandle file);
     LogicalVolume *find_logical_volume(QString &id);
     LogicalVolume *add_logical_volume(QString &id, int count);
 };

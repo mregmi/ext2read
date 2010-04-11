@@ -62,14 +62,14 @@ VolumeGroup *LVM::find_volgroup(QString &uuid)
 VolumeGroup *LVM::add_volgroup(QString &uuid, QString &name, int seq, int size)
 {
     VolumeGroup *vol;
-    list <VolumeGroup *> grouplist = ext2read->get_volgroups();
+    //list <VolumeGroup *> grouplist = ext2read->get_volgroups();
 
     vol = new VolumeGroup(uuid, name, seq, size);
     if(!vol)
         return NULL;
 
-    grouplist.push_back(vol);
-
+    ext2read->groups.push_back(vol);
+    LOG("Volgroup added \n");
     return vol;
 }
 
@@ -83,33 +83,38 @@ int LVM::scan_pv()
     char buffer[SECTOR_SIZE];
     char *metadata;
 
-    sector = pv_offset + 1;
-    ret = read_disk(pv_handle, buffer, sector, 1, SECTOR_SIZE);
-
-    header = (PV_LABEL_HEADER *) &buffer[0];
-    if(strncmp(header->pv_name, "LABELONE", LVM_SIGLEN) != 0)
+    for(int i = 0; i < 4; i++)
     {
-        LOG("Invalid label. The partition is not LVM2 volume\n");
-        return -1;
+        sector = pv_offset + i;
+        ret = read_disk(pv_handle, buffer, sector, 1, SECTOR_SIZE);
+
+        header = (PV_LABEL_HEADER *) &buffer[0];
+        if(strncmp(header->pv_name, "LABELONE", LVM_SIGLEN) != 0)
+        {
+            continue;
+            //LOG("Invalid label. The partition is not LVM2 volume\n");
+            //return -1;
+        }
+
+        LOG("PV Metadata: %s %UUID=%s offset %d \n",header->pv_name, header->pv_uuid, header->pv_labeloffset);
+        strncpy(uuid, header->pv_uuid, UUID_LEN);
+        uuid[UUID_LEN] = '\0';
+        sector = (header->pv_labeloffset/SECTOR_SIZE) + pv_offset;
+        read_disk(pv_handle, buffer, sector, 1, SECTOR_SIZE);
+        label = (PV_LABEL *) &buffer[0];
+
+        sector = pv_offset + ((label->pv_offset_low + label->pv_offset_high)/SECTOR_SIZE);
+        length = (label->pv_length + SECTOR_SIZE - 1)/SECTOR_SIZE;
+        metadata = new char[length * SECTOR_SIZE];
+        read_disk(pv_handle, metadata, sector, length, SECTOR_SIZE);
+
+        metadata[label->pv_length] = 0;
+        LOG("\n%s", metadata);
+        pv_metadata = QString::fromAscii(metadata, label->pv_length);
+        parse_metadata();
+        delete [] metadata;
+        break;
     }
-
-    LOG("PV Metadata: %s %UUID=%s offset %d \n",header->pv_name, header->pv_uuid, header->pv_labeloffset);
-    strncpy(uuid, header->pv_uuid, UUID_LEN);
-    uuid[UUID_LEN] = '\0';
-    sector = (header->pv_labeloffset/SECTOR_SIZE) + pv_offset;
-    read_disk(pv_handle, buffer, sector, 1, SECTOR_SIZE);
-    label = (PV_LABEL *) &buffer[0];
-
-    sector = pv_offset + ((label->pv_offset_low + label->pv_offset_high)/SECTOR_SIZE);
-    length = (label->pv_length + SECTOR_SIZE - 1)/SECTOR_SIZE;
-    metadata = new char[length * SECTOR_SIZE];
-    read_disk(pv_handle, metadata, sector, length, SECTOR_SIZE);
-
-    metadata[label->pv_length] = 0;
-    LOG("\n%s", metadata);
-    pv_metadata = QString::fromAscii(metadata, label->pv_length);
-    parse_metadata();
-    delete [] metadata;
     return 0;
 }
 
@@ -152,10 +157,12 @@ int LVM::parse_metadata()
         }
     }
 
+    LOG("Volgroup found seq %d, extent_size %d\n",seq, size);
     grp = find_volgroup(suuid);
     if(!grp)
     {
         grp = add_volgroup(suuid, volname, seq, size);
+        grp->set_ext2read(ext2read);
     }
 
     // Parse Physical Volume
@@ -175,7 +182,7 @@ int LVM::parse_metadata()
         suuid.replace("-", "");
         num += 38;
         numbase = num;
-        num = pv_metadata.indexOf("dev_size", num);
+        num = pv_metadata.indexOf(QRegExp("dev_size"), num);
         num = pv_metadata.indexOf(QRegExp("[0-9]+"), num);
         num2 = pv_metadata.indexOf(QRegExp("\\n"), num);
         dev_size = pv_metadata.mid(num, num2-num).toULongLong(&ok);
@@ -185,8 +192,8 @@ int LVM::parse_metadata()
             return -1;
         }
 
-        num = pv_metadata.indexOf("pe_start", numbase);
-        num = pv_metadata.indexOf(QRegExp("[0-9]+"), num2);
+        num = pv_metadata.indexOf(QRegExp("pe_start"), numbase);
+        num = pv_metadata.indexOf(QRegExp("[0-9]+"), num);
         num2 = pv_metadata.indexOf(QRegExp("\\n"), num);
         pe_start = pv_metadata.mid(num, num2-num).toUInt(&ok);
         if(!ok)
@@ -195,8 +202,8 @@ int LVM::parse_metadata()
             return -1;
         }
 
-        num = pv_metadata.indexOf("pe_count", numbase);
-        num = pv_metadata.indexOf(QRegExp("[0-9]+"), num2);
+        num = pv_metadata.indexOf(QRegExp("pe_count"), numbase);
+        num = pv_metadata.indexOf(QRegExp("[0-9]+"), num);
         num2 = pv_metadata.indexOf(QRegExp("\\n"), num);
         pe_count = pv_metadata.mid(num, num2-num).toUInt(&ok);
         if(!ok)
@@ -205,23 +212,29 @@ int LVM::parse_metadata()
             return -1;
         }
 
+        LOG("Physical Volume found. start %d, count %d, size %Ld\n", pe_start, pe_count, dev_size);
         PhysicalVolume *pvol;
         pvol = grp->find_physical_volume(suuid);
         num2 = suuid.compare(uuid);
         if(!pvol && (num2 == 0))
         {
-            pvol = grp->add_physical_volume(suuid, dev_size, pe_start, pe_count, pv_handle);
+            pvol = grp->add_physical_volume(suuid, dev_size, pe_start, pe_count, pv_handle, pv_offset);
         }
     }
 
     // Parse Logical Volume
     int nsegs;
-    num = pv_metadata.indexOf("logical_volumes", 0);
+    num = pv_metadata.indexOf(QRegExp("logical_volumes"), 0);
     if(num < 0)
         return -1;
-
+    num = pv_metadata.indexOf(QRegExp("\\n"), num);
+    num += 2;
+    QString lvolname = volname;
     while((num = pv_metadata.indexOf(QRegExp("[a-zA-Z_0-9\\s\\t]+\\{"), num)) > 0)
     {
+        num2 = pv_metadata.indexOf(QRegExp("[\\s\\t]+\\{"), num);
+        lvolname.append("_");
+        lvolname.append(pv_metadata.mid(num, num2-num));
         num = pv_metadata.indexOf(QRegExp("[a-zA-Z0-9]*-{1,}[a-zA-Z0-9]*"), num);
         if(num < 0)
             break;
@@ -243,8 +256,8 @@ int LVM::parse_metadata()
         uint32_t start_extent, extent_count;
         lvol = grp->find_logical_volume(suuid);
         if(!lvol)
-            lvol = grp->add_logical_volume(suuid, nsegs);
-
+            lvol = grp->add_logical_volume(suuid, nsegs, lvolname);
+        LOG("Logical Volume found. Name %s, segments %d\n", lvolname.toAscii().data(), nsegs);
         for(int i = 0; i < nsegs; i++)
         {
             num = pv_metadata.indexOf(QRegExp("segment[0-9]+"), num);
@@ -272,6 +285,7 @@ int LVM::parse_metadata()
             seg->stripe->stripe_start_extent = pv_metadata.mid(num, num2-num).toInt(&ok);
             seg->pvolumes = NULL;   // we do the segment -> pv mapping later because this pv might not be found yet
             lvol->segments.push_back(seg);
+            LOG("Segment found. start %d, count %d\n", start_extent, extent_count);
         }
     }
 
@@ -319,11 +333,11 @@ PhysicalVolume *VolumeGroup::find_physical_volume(QString &id)
     return NULL;
 }
 
-PhysicalVolume *VolumeGroup::add_physical_volume(QString &id, lloff_t devsize, uint32_t start, uint32_t count, FileHandle file)
+PhysicalVolume *VolumeGroup::add_physical_volume(QString &id, lloff_t devsize, uint32_t start, uint32_t count, FileHandle file, lloff_t dsk_offset)
 {
     PhysicalVolume *pvol;
 
-    pvol = new PhysicalVolume(id, devsize, start, count, file);
+    pvol = new PhysicalVolume(id, devsize, start, count, file, dsk_offset);
     if(!pvol)
         return NULL;
 
@@ -348,11 +362,11 @@ LogicalVolume *VolumeGroup::find_logical_volume(QString &id)
     return NULL;
 }
 
-LogicalVolume *VolumeGroup::add_logical_volume(QString &id, int count)
+LogicalVolume *VolumeGroup::add_logical_volume(QString &id, int count, QString &vname)
 {
     LogicalVolume *lvol;
 
-    lvol = new LogicalVolume(id, count);
+    lvol = new LogicalVolume(id, count, vname, this);
     if(!lvol)
         return NULL;
 
@@ -360,22 +374,107 @@ LogicalVolume *VolumeGroup::add_logical_volume(QString &id, int count)
     return lvol;
 }
 
-PhysicalVolume::PhysicalVolume(QString &id, lloff_t devsize, uint32_t start, uint32_t count, FileHandle file)
+void VolumeGroup::logical_mount()
+{
+    //EXT2_SUPER_BLOCK sblock;
+    LogicalVolume *lvol;
+    //PhysicalVolume *pvol;
+    Ext2Partition *partition;
+    lv_segment *seg;
+    lv_segment *root = NULL;
+    list<LogicalVolume *>::iterator i;
+    list<lv_segment *>::iterator j;
+    list<PhysicalVolume *>::iterator k;
+    lloff_t start;
+    int index = 0;
+
+    for(i = lvolumes.begin(); i != lvolumes.end(); i++)
+    {
+        lvol = (*i);
+        for(j = lvol->segments.begin(); j != lvol->segments.end(); j++)
+        {
+            seg = (*j);
+            if(seg->start_extent == 0)
+                root = seg;
+
+            index = 0;
+            for(k = pvolumes.begin(); k != pvolumes.end(); k++)
+            {
+                if(seg->stripe->stripe_pv == index)
+                {
+                    seg->pvolumes = (*k);
+                    break;
+                }
+                index++;
+            }
+        }
+
+        if(!root)
+            continue;
+
+        start = root->pvolumes->pe_start + root->pvolumes->offset + root->stripe->stripe_start_extent;
+        partition = new Ext2Partition(root->pvolumes->dev_size, start, SECTOR_SIZE, root->pvolumes->handle, lvol);
+        if(partition->is_valid)
+        {
+            QByteArray ba;
+            ba = lvol->volname.toAscii();
+            partition->set_image_name(ba.data());
+            ext2read->add_partition(partition);
+        }
+        else
+        {
+            delete partition;
+        }
+    }
+}
+
+PhysicalVolume::PhysicalVolume(QString &id, lloff_t devsize, uint32_t start, uint32_t count, FileHandle file, lloff_t dsk_offset)
 {
     uuid = id;
     dev_size = devsize;
     pe_start = start;
     pe_count = count;
     handle = file;
+    offset = dsk_offset;
 }
 
-LogicalVolume::LogicalVolume(QString &id, int nsegs)
+LogicalVolume::LogicalVolume(QString &id, int nsegs, QString &vname, VolumeGroup *vol)
 {
     uuid = id;
     segment_count = nsegs;
+    this_group = vol;
+    volname = vname;
 }
 
 LogicalVolume::~LogicalVolume()
 {
 
+}
+
+lloff_t LogicalVolume::lvm_mapper(lloff_t sectno)
+{
+    lv_segment *seg;
+    lloff_t sect_mapped = 0;
+    uint32_t extent_no, extent_offset;
+    list<lv_segment *>::iterator iterate;
+
+    extent_no = sectno / this_group->extent_size;
+    extent_offset = sectno % this_group->extent_size;
+
+    for(iterate = segments.begin(); iterate != segments.end(); iterate++)
+    {
+        seg = (*iterate);
+        if((extent_no >= seg->start_extent) && (extent_no < (seg->start_extent + seg->extent_count)))
+        {
+            sect_mapped = (lloff_t)(extent_no *  this_group->extent_size) + extent_offset;
+            sect_mapped += seg->pvolumes->pe_start + seg->pvolumes->offset + seg->stripe->stripe_start_extent;
+            break;
+        }
+    }
+
+    if(sect_mapped == 0)
+    {
+        LOG("Error in LVM Mapping \n");
+    }
+    return sect_mapped;
 }

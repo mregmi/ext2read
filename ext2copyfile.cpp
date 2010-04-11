@@ -211,10 +211,10 @@ bool Ext2CopyProcess::copy_folder(QString &path, Ext2File *parent)
         return false;
 
     dir.mkdir(codec->toUnicode(parent->file_name.c_str()));
-    ba = path.toAscii();
+    /*ba = path.toAscii();
     const char *c_str2 = ba.data();
     LOG("Creating Folder %s as %s\n", parent->file_name.c_str(), c_str2);
-
+*/
     dirent = part->open_dir(parent);
     while((child = part->read_dir(dirent)) != NULL)
     {
@@ -234,8 +234,9 @@ bool Ext2CopyProcess::copy_folder(QString &path, Ext2File *parent)
         }
         else if(!EXT2_S_ISREG(child->inode.i_mode))
         {
-            part->close_dir(dirent);
-            return false;
+            continue;
+            //part->close_dir(dirent);
+            //return false;
         }
 
         filetosave.append(QString::fromAscii("/"));

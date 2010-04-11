@@ -76,12 +76,13 @@ public:
 
 
 class PhysicalVolume {
-    FileHandle handle;
-    lloff_t dev_size;
-    uint32_t pe_start, pe_count;
 public:
+    lloff_t dev_size;
+    FileHandle handle;
+    uint32_t pe_start, pe_count;
+    lloff_t offset;     // offset from the start of disk to lvm volume
     QString uuid;
-    PhysicalVolume(QString &id, lloff_t devsize, uint32_t start, uint32_t count, FileHandle file);
+    PhysicalVolume(QString &id, lloff_t devsize, uint32_t start, uint32_t count, FileHandle file, lloff_t dsk_offset);
 };
 
 // Multiple stripes NOT Implemented: we only support linear for now.
@@ -107,13 +108,15 @@ public:
 class LogicalVolume {
     int segment_count;
     VolumeGroup *this_group;
-    std::list <PhysicalVolume *> pvolumes;
 public:
     QString uuid;
+    QString volname;
     std::list <lv_segment *> segments;
+    //std::list <PhysicalVolume *> pvolumes;
 
-    LogicalVolume(QString &id, int nsegs);
+    LogicalVolume(QString &id, int nsegs, QString &vname, VolumeGroup *);
     ~LogicalVolume();
+    lloff_t lvm_mapper(lloff_t block);
 };
 
 class VolumeGroup {
@@ -125,14 +128,17 @@ public:
     int max_lv, max_pv;
     std::list <PhysicalVolume *> pvolumes;
     std::list <LogicalVolume *> lvolumes;
+    Ext2Read *ext2read;
 
 public:
     VolumeGroup(QString &id, QString &name, int seq, int size);
     ~VolumeGroup();
     PhysicalVolume *find_physical_volume(QString &id);
-    PhysicalVolume *add_physical_volume(QString &id, lloff_t devsize, uint32_t start, uint32_t count, FileHandle file);
+    PhysicalVolume *add_physical_volume(QString &id, lloff_t devsize, uint32_t start, uint32_t count, FileHandle file, lloff_t dsk_offset);
     LogicalVolume *find_logical_volume(QString &id);
-    LogicalVolume *add_logical_volume(QString &id, int count);
+    LogicalVolume *add_logical_volume(QString &id, int count, QString &vname);
+    void logical_mount();
+    void set_ext2read(Ext2Read *ext2) { ext2read = ext2; }
 };
 
 #ifdef __cplusplus

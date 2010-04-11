@@ -299,7 +299,7 @@ void Ext2Explore::on_action_Save_triggered()
 
     if(EXT2_S_ISDIR(file->inode.i_mode))
     {
-        filename = QFileDialog::getExistingDirectory(this, tr("???? ????"),
+        filename = QFileDialog::getExistingDirectory(this, tr("Save folder in"),
                                 QString::fromAscii(""),
                                 QFileDialog::ShowDirsOnly);
     }

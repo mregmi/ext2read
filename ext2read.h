@@ -117,6 +117,8 @@ static INLINE char *get_access(unsigned long mode)
 
 // forward declaration
 class Ext2Partition;
+class VolumeGroup;
+class LogicalVolume;
 
 class Ext2File {
 public:
@@ -154,6 +156,7 @@ class Ext2Partition {
     lloff_t last_block;          // block number of the last inode block read
     Ext2File *root;
     QCache <lloff_t , char > buffercache; //LRU based cache for blocks
+    LogicalVolume *lvol;
     
     int ext2_readblock(lloff_t blocknum, void *buffer);
     uint32_t fileblock_to_logical(EXT2_INODE *ino, uint32_t lbn);
@@ -166,7 +169,7 @@ public:
     bool is_valid;      // is this valid Ext2/3/4 partition
 
 public:
-    Ext2Partition(lloff_t, lloff_t, int ssise, FileHandle );
+    Ext2Partition(lloff_t, lloff_t, int ssise, FileHandle , LogicalVolume *vol);
     ~Ext2Partition();
 
     void set_linux_name(const char *, int , int);
@@ -179,16 +182,15 @@ public:
     EXT2DIRENT *open_dir(Ext2File *parent);
     Ext2File *read_dir(EXT2DIRENT *);
     void close_dir(EXT2DIRENT *);
-};
 
-class VolumeGroup;
+};
 
 class Ext2Read {
 private:
     int ndisks;
 
     list <Ext2Partition *> nparts;
-    list <VolumeGroup *> groups;
+
     int scan_ebr(FileHandle , lloff_t , int , int);
     int scan_partitions(char *path, int);
     void clear_partitions();
@@ -198,10 +200,13 @@ public:
     Ext2Read();
     ~Ext2Read();
 
+    list <VolumeGroup *> groups;
+
     void scan_system();
     int add_loopback(const char *file);
     list<Ext2Partition *> get_partitions();
     list<VolumeGroup *> &get_volgroups() { return groups; }
+    void add_partition(Ext2Partition *part) { nparts.push_back(part); }
 };
 
 #ifdef __cplusplus

@@ -69,6 +69,8 @@
 #define	EXT2_TIND_BLOCK			(EXT2_DIND_BLOCK + 1)
 #define	EXT2_N_BLOCKS			(EXT2_TIND_BLOCK + 1)
 
+/* Superblock Flags */
+#define EXT2_FEATURE_INCOMPAT_COMPRESSION 0x0001    /* disk/file compression is used */
 /*Inode flags  */
 #define	EXT2_SECRM_FL			0x00000001 /* Secure deletion */
 #define	EXT2_UNRM_FL				0x00000002 /* Undelete */

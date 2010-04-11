@@ -23,8 +23,9 @@
 
 
 #include "ext2read.h"
+#include "lvm.h"
 
-Ext2Partition::Ext2Partition(lloff_t size, lloff_t offset, int ssize, FileHandle phandle)
+Ext2Partition::Ext2Partition(lloff_t size, lloff_t offset, int ssize, FileHandle phandle, LogicalVolume *vol)
 {
     int ret;
 
@@ -34,6 +35,7 @@ Ext2Partition::Ext2Partition(lloff_t size, lloff_t offset, int ssize, FileHandle
     sect_size = ssize;
     onview = false;
     inode_buffer = NULL;
+    lvol = vol;
     buffercache.setMaxCost(MAX_CACHE_SIZE);
     //has_extent = 1;
     ret = mount();
@@ -91,7 +93,14 @@ int Ext2Partition::ext2_readblock(lloff_t blocknum, void *buffer)
         if(!newbuffer)
             return -1;
 
-        sectno = (lloff_t)((lloff_t)(blocksize/sect_size) * blocknum) + relative_sect;
+        if(lvol)
+        {
+            sectno = lvol->lvm_mapper((lloff_t)nsects * blocknum);
+        }
+        else
+        {
+            sectno = (lloff_t)((lloff_t)nsects * blocknum) + relative_sect;
+        }
         ret = read_disk(handle, newbuffer, sectno, nsects, sect_size);
         if(ret < 0)
         {
@@ -118,6 +127,10 @@ int Ext2Partition::mount()
         return -1;
     }
 
+    if(sblock.s_feature_incompat & EXT2_FEATURE_INCOMPAT_COMPRESSION)
+    {
+        LOG("File system compression is used which is not supported.\n");
+    }
     blocksize = EXT2_BLOCK_SIZE(&sblock);
     inodes_per_group = EXT2_INODES_PER_GROUP(&sblock);
     inode_size = EXT2_INODE_SIZE(&sblock);
@@ -287,6 +300,10 @@ Ext2File *Ext2Partition::read_inode(uint32_t inum)
     //LOG("BLKNUM is %d, inode_index %d\n", file->inode.i_size, inode_index);
     file->inode_num = inum;
     file->file_size = (lloff_t) src->i_size | ((lloff_t) src->i_size_high << 32);
+    if(file->file_size == 0)
+    {
+        LOG("Inode %d with file size 0\n", inum);
+    }
     file->partition = (Ext2Partition *)this;
     file->onview = false;
 

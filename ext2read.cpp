@@ -64,6 +64,18 @@ void Ext2Read::scan_system()
             continue;
         }
     }
+
+    // Now Mount the LVM Partitions
+    if(groups.empty())
+        return;
+
+    list<VolumeGroup *>::iterator i;
+    VolumeGroup *grp;
+    for(i = groups.begin(); i != groups.end(); i++)
+    {
+        grp = (*i);
+        grp->logical_mount();
+    }
 }
 
 void Ext2Read::clear_partitions()
@@ -110,7 +122,7 @@ int Ext2Read::scan_ebr(FileHandle handle, lloff_t base, int sectsize, int disk)
 
         if(part->sys_ind == EXT2)
         {
-            partition = new Ext2Partition(get_nr_sects(part), get_start_sect(part)+ ebrBase + ebr2, sectsize, handle);
+            partition = new Ext2Partition(get_nr_sects(part), get_start_sect(part)+ ebrBase + ebr2, sectsize, handle, NULL);
             if(partition->is_valid)
             {
                 partition->set_linux_name("/dev/sd", disk, logical);
@@ -182,7 +194,7 @@ int Ext2Read::scan_partitions(char *path, int diskno)
 
             if(part->sys_ind == EXT2)
             {
-                partition = new Ext2Partition(get_nr_sects(part), get_start_sect(part), sector_size, handle);
+                partition = new Ext2Partition(get_nr_sects(part), get_start_sect(part), sector_size, handle, NULL);
                 if(partition->is_valid)
                 {
                     partition->set_linux_name("/dev/sd", diskno, i);
@@ -222,7 +234,7 @@ int Ext2Read::add_loopback(const char *file)
    if(ret == -INVALID_TABLE)
    {
        handle = open_disk(file, &sector_size);
-       partition = new Ext2Partition(0, 0, sector_size, handle);
+       partition = new Ext2Partition(0, 0, sector_size, handle, NULL);
        if(partition->is_valid)
        {
             partition->set_image_name(file);

@@ -40,6 +40,39 @@ LVM::~LVM()
 
 }
 
+VolumeGroup *LVM::find_volgroup(QString &uuid)
+{
+    VolumeGroup *grp;
+    list<VolumeGroup *>::iterator i;
+    list <VolumeGroup *> grouplist = ext2read->get_volgroups();
+
+
+    for(i = grouplist.begin(); i != grouplist.end(); i++)
+    {
+        grp = (*i);
+        if(grp->uuid.compare(uuid) == 0)
+        {
+            return grp;
+        }
+    }
+
+    return NULL;
+}
+
+VolumeGroup *LVM::add_volgroup(QString &uuid, QString &name, int seq, int size)
+{
+    VolumeGroup *vol;
+    list <VolumeGroup *> grouplist = ext2read->get_volgroups();
+
+    vol = new VolumeGroup(uuid, name, seq, size);
+    if(!vol)
+        return NULL;
+
+    grouplist.push_back(vol);
+
+    return vol;
+}
+
 int LVM::scan_pv()
 {
     int ret;
@@ -82,10 +115,11 @@ int LVM::scan_pv()
 // NOTE: Do error checking
 int LVM::parse_metadata()
 {
-    int num, tmpnum;
+    int num, num2;
     QString volname, suuid;
     int seq, size;
     bool ok;
+    VolumeGroup *grp;
     QByteArray ba;
 
     num = pv_metadata.indexOf("{");
@@ -117,14 +151,187 @@ int LVM::parse_metadata()
         }
     }
 
-    /*ba = pv_metadata.toAscii();
-    const char *c_str2 = ba.data();
-    LOG("Group %s\n", c_str2);
+    grp = find_volgroup(suuid);
+    if(!grp)
+    {
+        grp = add_volgroup(suuid, volname, seq, size);
+    }
 
-    ba = suuid.toAscii();
-    c_str2 = ba.data();
-    LOG("UUID %s\n", c_str2);
-*/
+    // Parse Physical Volume
+    lloff_t dev_size;
+    uint32_t pe_start, pe_count;
+    num = pv_metadata.indexOf("physical_volumes", 0);
+    if(num < 0)
+        return -1;
+
+    while((num = pv_metadata.indexOf(QRegExp("pv[0-9\\s\\t]+\\{"), num)) > 0)
+    {
+        num = pv_metadata.indexOf(QRegExp("[a-zA-Z0-9]*-{1,}[a-zA-Z0-9]*"), num);
+        if(num < 0)
+            break;
+
+        suuid = pv_metadata.mid(num, 38);
+        suuid.replace("-", "");
+        num += 38;
+        num = pv_metadata.indexOf("flags", num);
+        num = pv_metadata.indexOf(QRegExp("[0-9]+"), num);
+        num2 = pv_metadata.indexOf(QRegExp("\\n"), num);
+        dev_size = pv_metadata.mid(num, num2-num).toULongLong(&ok);
+        if(!ok)
+        {
+            LOG("Cannot Parse LVM Metadata (Physical Volume) :-( \n");
+            return -1;
+        }
+
+        num = pv_metadata.indexOf(QRegExp("[0-9]+"), num2);
+        num2 = pv_metadata.indexOf(QRegExp("\\n"), num);
+        pe_start = pv_metadata.mid(num, num2-num).toUInt(&ok);
+        if(!ok)
+        {
+            LOG("Cannot Parse LVM Metadata :-( \n");
+            return -1;
+        }
+
+        num = pv_metadata.indexOf(QRegExp("[0-9]+"), num2);
+        num2 = pv_metadata.indexOf(QRegExp("\\n"), num);
+        pe_count = pv_metadata.mid(num, num2-num).toUInt(&ok);
+        if(!ok)
+        {
+            LOG("Cannot Parse LVM Metadata (Physical Volume) :-( \n");
+            return -1;
+        }
+
+        PhysicalVolume *pvol;
+        pvol = grp->find_physical_volume(suuid);
+        if(!pvol)
+            pvol = grp->add_physical_volume(suuid, dev_size, pe_start, pe_count);
+    }
+
+    // Parse Logical Volume
+    int nsegs;
+    num = pv_metadata.indexOf("logical_volumes", 0);
+    if(num < 0)
+        return -1;
+
+    while((num = pv_metadata.indexOf(QRegExp("[a-zA-Z_0-9\\s\\t]+\\{"), num)) > 0)
+    {
+        num = pv_metadata.indexOf(QRegExp("[a-zA-Z0-9]*-{1,}[a-zA-Z0-9]*"), num);
+        if(num < 0)
+            break;
+
+        suuid = pv_metadata.mid(num, 38);
+        suuid.replace("-", "");
+        num += 38;
+        num = pv_metadata.indexOf("flags", num);
+        num = pv_metadata.indexOf(QRegExp("[0-9]+"), num);
+        num2 = pv_metadata.indexOf(QRegExp("\\n"), num);
+        nsegs = pv_metadata.mid(num, num2-num).toInt(&ok);
+        if(!ok)
+        {
+            LOG("Cannot Parse LVM Metadata (Logical Volume) :-( \n");
+            return -1;
+        }
+    }
     return 0;
 }
 
+
+VolumeGroup::VolumeGroup(QString &id, QString &name, int seq, int size)
+{
+    uuid = id;
+    volname = name;
+    seqno = seq;
+    extent_size = size;
+}
+
+VolumeGroup::~VolumeGroup()
+{
+    list<PhysicalVolume *>::iterator i;
+    list<LogicalVolume *>::iterator j;
+    for(i = pvolumes.begin(); i != pvolumes.end(); i++)
+    {
+        delete (*i);
+    }
+
+    for(j = lvolumes.begin(); j != lvolumes.end(); j++)
+    {
+        delete (*j);
+    }
+}
+
+PhysicalVolume *VolumeGroup::find_physical_volume(QString &id)
+{
+    PhysicalVolume *pvol;
+    list<PhysicalVolume *>::iterator i;
+
+    for(i = pvolumes.begin(); i != pvolumes.end(); i++)
+    {
+        pvol = (*i);
+        if(pvol->uuid.compare(id) == 0)
+        {
+            return pvol;
+        }
+    }
+
+    return NULL;
+}
+
+PhysicalVolume *VolumeGroup::add_physical_volume(QString &id, lloff_t devsize, uint32_t start, uint32_t count)
+{
+    PhysicalVolume *pvol;
+
+    pvol = new PhysicalVolume(id, devsize, start, count);
+    if(!pvol)
+        return NULL;
+
+    pvolumes.push_back(pvol);
+    return pvol;
+}
+
+LogicalVolume *VolumeGroup::find_logical_volume(QString &id)
+{
+    LogicalVolume *lvol;
+    list<LogicalVolume *>::iterator i;
+
+    for(i = lvolumes.begin(); i != lvolumes.end(); i++)
+    {
+        lvol = (*i);
+        if(lvol->uuid.compare(id) == 0)
+        {
+            return lvol;
+        }
+    }
+
+    return NULL;
+}
+
+LogicalVolume *VolumeGroup::add_logical_volume(QString &id, int count)
+{
+    LogicalVolume *lvol;
+
+    lvol = new LogicalVolume(id, count);
+    if(!lvol)
+        return NULL;
+
+    lvolumes.push_back(lvol);
+    return lvol;
+}
+
+PhysicalVolume::PhysicalVolume(QString &id, lloff_t devsize, uint32_t start, uint32_t count)
+{
+    uuid = id;
+    dev_size = devsize;
+    pe_start = start;
+    pe_count = count;
+}
+
+LogicalVolume::LogicalVolume(QString &id, int nsegs)
+{
+    uuid = id;
+    segment_count = nsegs;
+}
+
+LogicalVolume::~LogicalVolume()
+{
+
+}

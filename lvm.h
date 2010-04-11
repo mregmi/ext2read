@@ -69,14 +69,17 @@ public:
 
     int scan_pv();
     int parse_metadata();
-    VolumeGroup *find_volgroup();
+    VolumeGroup *find_volgroup(QString &uuid);
+    VolumeGroup *add_volgroup(QString &uuid, QString &name, int seq, int size);
 };
 
 
 class PhysicalVolume {
-    char uuid[UUID_LEN];
     lloff_t dev_size;
     uint32_t pe_start, pe_count;
+public:
+    QString uuid;
+    PhysicalVolume(QString &id, lloff_t devsize, uint32_t start, uint32_t count);
 };
 
 class lv_segment {
@@ -86,14 +89,21 @@ class lv_segment {
 };
 
 class LogicalVolume {
-    char uuid[UUID_LEN];
     int segment_count;
     VolumeGroup *this_group;
+    std::list <PhysicalVolume *> pvolumes;
+    std::list <lv_segment *> segments;
+public:
+    QString uuid;
+
+    LogicalVolume(QString &id, int nsegs);
+    ~LogicalVolume();
 };
 
 class VolumeGroup {
-private:
-    QString volgroup;
+public:
+    QString volname;
+    QString uuid;
     int extent_size;
     int seqno;
     int max_lv, max_pv;
@@ -101,8 +111,12 @@ private:
     std::list <LogicalVolume *> lvolumes;
 
 public:
-    VolumeGroup();
+    VolumeGroup(QString &id, QString &name, int seq, int size);
     ~VolumeGroup();
+    PhysicalVolume *find_physical_volume(QString &id);
+    PhysicalVolume *add_physical_volume(QString &id, lloff_t devsize, uint32_t start, uint32_t count);
+    LogicalVolume *find_logical_volume(QString &id);
+    LogicalVolume *add_logical_volume(QString &id, int count);
 };
 
 #ifdef __cplusplus

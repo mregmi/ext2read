@@ -201,6 +201,7 @@ public:
     void scan_system();
     int add_loopback(const char *file);
     list<Ext2Partition *> get_partitions();
+    list<VolumeGroup *> &get_volgroups() { return groups; }
 };
 
 #ifdef __cplusplus

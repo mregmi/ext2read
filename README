@@ -1,0 +1,28 @@
+we are pleased to announce a new version of our ext2read project
+
+FEATURES:
+Simple UI designed using QT4.
+View/Read Ext2/ext3/ext4 partitions.
+Linux LVM2 Support.
+Ext4 Large File support (untested).
+Recursively Copy the entire folder or even /
+Support for external USB disks.
+Support for disk and filesystem  images. For eg. Wubi users can just
+open their root.disk file through this program.
+LRU based Block cache for faster access.
+Unicode support.
+
+If you find any bugs, have any questions or comments. Please let us know.
+
+The executables and sources can be downloaded from http://ext2read.sf.net
+
+If any of you are interested in joing this project, you can join the
+mailing list and discuss. Join from here
+https://lists.sourceforge.net/lists/listinfo/ext2read-devel
+
+Enjoy reading your files.
+
+NOTE: This program must be run as Administrator. right click the file
+and select run as Administrator.
+This is not a transparent file system driver jusr a user space tool.
+The LVM2 metadata can be complex because of the wide variety of configuration posibilities. All configurations has not been tested. If Lvm2 does not work in your system, please file a bug with your LVM2 metadata.

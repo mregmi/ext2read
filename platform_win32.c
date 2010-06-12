@@ -41,6 +41,7 @@ FileHandle open_disk(const char *path, int *sect_size)
 
     if(handle == INVALID_HANDLE_VALUE)
     {
+        ext2explore_log("Error Opening %s. Error Code %X\n", path, GetLastError());
         return handle;
     }
 
@@ -75,13 +76,19 @@ int get_ndisks()
                               OPEN_EXISTING,  // disposition
                               0,       // file attributes
                               NULL);   // don't copy any file's attributes
-        if(hDevice != INVALID_HANDLE_VALUE)
-            CloseHandle(hDevice);
+
+        if(hDevice == INVALID_HANDLE_VALUE)
+        {
+            ext2explore_log("Error Opening %s. Error Code %X\n", path, GetLastError());
+            break;
+        }
+
+        CloseHandle(hDevice);
         ndisks++;
         path[17] = (char)('0' + ndisks);
     }while(hDevice != INVALID_HANDLE_VALUE);
 
-    return ndisks - 1;
+    return ndisks;
 }
 
 void close_disk(FileHandle handle)

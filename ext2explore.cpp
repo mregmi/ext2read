@@ -22,6 +22,7 @@
  **/
 
 #include <QFileDialog>
+#include <QMessageBox.h>
 
 #include "ext2explore.h"
 #include "ext2copyfile.h"
@@ -29,12 +30,19 @@
 #include "ui_ext2explore.h"
 
 Ext2Explore::Ext2Explore(QWidget *parent) :
-    QMainWindow(parent),
-    ui(new Ui::Ext2Explore)
+        QMainWindow(parent),
+        ui(new Ui::Ext2Explore)
 {
     QRect rect;
     filemodel = new QStandardItemModel(this);
     app = new Ext2Read();
+
+    if(app->get_detected_disks() <= 0)
+    {
+        QMessageBox::information(this, "Cannot Read Disk",
+                                 "Unable to read disk. Please make sure you are running this application as an Administrator.",
+                                 QMessageBox::Ok);
+    }
 
     ui->setupUi(this);
 
@@ -209,7 +217,7 @@ void Ext2Explore::on_actionOpen_Image_triggered()
     QString filename;
 
     filename = QFileDialog::getOpenFileName(this,
-               tr("Open Disk Image"), QString::fromAscii(""), tr("All Disk Image Files (*)"));
+                                            tr("Open Disk Image"), QString::fromAscii(""), tr("All Disk Image Files (*)"));
     //LOG("Opening file %s as a disk image. \n", filename.toAscii());
 
     result = app->add_loopback(filename.toAscii());
@@ -249,7 +257,7 @@ void Ext2Explore::on_action_item_dbclicked(const QModelIndex &index)
     dir = part->open_dir(parentFile);
     while((files = part->read_dir(dir)) != NULL)
     {
-//        LOG("Found File %s inode %d \n", files->file_name.c_str(), files->inode_num);
+        //        LOG("Found File %s inode %d \n", files->file_name.c_str(), files->inode_num);
 
         children = new QStandardItem(QIcon(handle_mime(files->file_name, files->inode.i_mode)),
                                      codec->toUnicode(files->file_name.c_str()));
@@ -300,14 +308,14 @@ void Ext2Explore::on_action_Save_triggered()
     if(EXT2_S_ISDIR(file->inode.i_mode))
     {
         filename = QFileDialog::getExistingDirectory(this, tr("Save folder in"),
-                                QString::fromAscii(""),
-                                QFileDialog::ShowDirsOnly);
+                                                     QString::fromAscii(""),
+                                                     QFileDialog::ShowDirsOnly);
     }
     else
     {
         filename = QFileDialog::getSaveFileName(this, tr("Save File/Folder"),
-                                QString::fromStdString(file->file_name),
-                                tr("All Files (*)"));
+                                                QString::fromStdString(file->file_name),
+                                                tr("All Files (*)"));
     }
     if(filename.isEmpty())
         return;

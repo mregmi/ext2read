@@ -65,7 +65,7 @@ int get_ndisks()
 {
     HANDLE hDevice;               // handle to the drive to be examined
     int ndisks = 0;
-    char path[20] = {"\\\\.\\PhysicalDrive0"};
+    char path[] = {"\\\\.\\PhysicalDrive0"};
 
     do {
         //TRACE("NDISKS %s", path);
@@ -85,7 +85,7 @@ int get_ndisks()
 
         CloseHandle(hDevice);
         ndisks++;
-        path[17] = (char)('0' + ndisks);
+        path[strlen(path) - 1] = (char)('0' + ndisks);
     }while(hDevice != INVALID_HANDLE_VALUE);
 
     return ndisks;

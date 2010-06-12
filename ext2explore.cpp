@@ -46,11 +46,12 @@ Ext2Explore::Ext2Explore(QWidget *parent) :
 
     ui->setupUi(this);
 
+    filemodel->sort(0);
     ui->tree->setModel(filemodel);
     ui->tree->header()->hide();
     ui->tree->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->tree->setSelectionMode(QAbstractItemView::SingleSelection);
-
+    
     ui->list->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->list->setSelectionMode( QAbstractItemView::SingleSelection );
     ui->list->setModel(filemodel);
@@ -243,7 +244,6 @@ void Ext2Explore::on_action_item_dbclicked(const QModelIndex &index)
     parentItem = filemodel->itemFromIndex(index);
     fileData = parentItem->data(Qt::UserRole);
     parentFile = (Ext2File *) fileData.value<void *>();
-
     if(!EXT2_S_ISDIR(parentFile->inode.i_mode))
         return;
 
@@ -268,6 +268,7 @@ void Ext2Explore::on_action_item_dbclicked(const QModelIndex &index)
     }
 
     part->close_dir(dir);
+    parentItem->sortChildren(0);
 }
 
 void Ext2Explore::ext2_context_menu(const QPoint &point)

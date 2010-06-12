@@ -207,6 +207,7 @@ public:
     list<Ext2Partition *> get_partitions();
     list<VolumeGroup *> &get_volgroups() { return groups; }
     void add_partition(Ext2Partition *part) { nparts.push_back(part); }
+    int get_detected_disks() { return ndisks; }
 };
 
 #ifdef __cplusplus

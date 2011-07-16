@@ -367,7 +367,8 @@ lloff_t Ext2Partition::extent_binarysearch(EXT4_EXTENT_HEADER *header, lloff_t l
     for(int i = 0; i < header->eh_entries; i++)
     {
         //        LOG("INDEX: Block: %d Leaf: %d \n", index->ei_block, index->ei_leaf_lo);
-        if(lbn >= index->ei_block)
+        if((i == (header->eh_entries - 1)) ||
+           (lbn < (index + 1)->ei_block))
         {
             child = (EXT4_EXTENT_HEADER *) new char [blocksize];
             block = idx_to_block(index);
@@ -375,6 +376,7 @@ lloff_t Ext2Partition::extent_binarysearch(EXT4_EXTENT_HEADER *header, lloff_t l
 
             return extent_binarysearch(child, lbn, true);
         }
+        index++;
     }
 
     // We reach here if we do not find the key

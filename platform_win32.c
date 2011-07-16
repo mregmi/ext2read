@@ -26,6 +26,7 @@
 
 #define DEVICE	"\\\\.\\PhysicalDrive0"
 
+int ext2explore_log(const char *str, ...);
 FileHandle open_disk(const char *path, int *sect_size)
 {
     HANDLE handle;

@@ -120,6 +120,14 @@ int Ext2Read::scan_ebr(FileHandle handle, lloff_t base, int sectsize, int disk)
         part = pt_offset(sector, 0);
         LOG("index %d ID %X size %Ld \n", logical, part->sys_ind, get_nr_sects(part));
 
+        /*if((part->sys_ind == 0x05) || (part->sys_ind == 0x0f))
+        {
+            // special case. ebr has extended partition with offset to another ebr.
+            ebr2 += get_start_sect(part);
+            nextPart = (ebr2 + ebrBase);
+            continue;
+        }*/
+
         if(part->sys_ind == EXT2)
         {
             partition = new Ext2Partition(get_nr_sects(part), get_start_sect(part)+ ebrBase + ebr2, sectsize, handle, NULL);

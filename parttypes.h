@@ -108,7 +108,8 @@
 #define F4h	// SpeedStor
 #define FEh	// LANstep
 #define FFh	// bad
-*/
+
+
 
 static const char *part_type(unsigned char type)
 {
@@ -178,5 +179,5 @@ static const char *part_type(unsigned char type)
 
 	return "Unknown";
 }
-
+*/
 #endif //__PARTTYPES_H

@@ -123,7 +123,7 @@ int LVM::parse_metadata()
 {
     int num, num2, numbase;
     QString volname, suuid;
-    int seq, size;
+    int seq = 0, size = 0;
     bool ok;
     VolumeGroup *grp;
     QByteArray ba;

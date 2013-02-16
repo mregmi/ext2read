@@ -22,7 +22,7 @@
  **/
 
 #include <QFileDialog>
-#include <QMessageBox.h>
+#include <QMessageBox>
 
 #include "ext2explore.h"
 #include "ext2copyfile.h"
@@ -51,7 +51,7 @@ Ext2Explore::Ext2Explore(QWidget *parent) :
     ui->tree->header()->hide();
     ui->tree->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->tree->setSelectionMode(QAbstractItemView::SingleSelection);
-    
+
     ui->list->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->list->setSelectionMode( QAbstractItemView::SingleSelection );
     ui->list->setModel(filemodel);
@@ -70,6 +70,7 @@ Ext2Explore::Ext2Explore(QWidget *parent) :
 
     connect(ui->tree, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(on_action_item_dbclicked(const QModelIndex &)));
     connect(ui->list, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(on_action_item_dbclicked(const QModelIndex &)));
+    connect(ui->list, SIGNAL(clicked(QModelIndex)), this, SLOT(on_action_item_clicked(const QModelIndex &)));
     connect(this, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(ext2_context_menu(const QPoint &)));
 
     codec = QTextCodec::codecForName("utf-8");
@@ -141,7 +142,6 @@ void Ext2Explore::init_root_fs()
         item->setData(qVariantFromValue(ptr), Qt::UserRole);
         item->setEditable(false);
         root->appendRow(item);
-
         temp->onview = true;
     }
 }
@@ -229,6 +229,19 @@ void Ext2Explore::on_actionOpen_Image_triggered()
     }
 
     init_root_fs();
+}
+
+void Ext2Explore::on_action_item_clicked(const QModelIndex &index)
+{
+    QStandardItem *parentItem;
+    QVariant fileData;
+    Ext2File *parentFile;
+
+    parentItem = filemodel->itemFromIndex(index);
+    fileData = parentItem->data(Qt::UserRole);
+    parentFile = (Ext2File *) fileData.value<void *>();
+
+    statusBar()->showMessage(QString(parentFile->file_name.c_str()));
 }
 
 void Ext2Explore::on_action_item_dbclicked(const QModelIndex &index)

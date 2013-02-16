@@ -25,11 +25,21 @@
        <enum>Qt::Horizontal</enum>
       </property>
       <widget class="QTreeView" name="tree">
+       <property name="baseSize">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
        <property name="layoutDirection">
         <enum>Qt::LeftToRight</enum>
        </property>
       </widget>
-      <widget class="QListView" name="list"/>
+      <widget class="QListView" name="list">
+       <property name="uniformItemSizes">
+        <bool>true</bool>
+       </property>
+      </widget>
      </widget>
     </item>
    </layout>

@@ -74,6 +74,7 @@ private slots:
     void on_action_About_triggered();
     void on_actionP_roperties_triggered();
     void on_action_Exit_triggered();
+    void on_action_item_clicked(const QModelIndex &index);
     void on_action_item_dbclicked(const QModelIndex &index);
     void ext2_context_menu(const QPoint &);
 };

@@ -79,6 +79,11 @@ string &Ext2Partition::get_linux_name()
     return linux_name;
 }
 
+string &Ext2Partition::get_volume_name()
+{
+    return volume_name;
+}
+
 int Ext2Partition::ext2_readblock(lloff_t blocknum, void *buffer)
 {
     char *newbuffer;
@@ -134,6 +139,8 @@ int Ext2Partition::mount()
     blocksize = EXT2_BLOCK_SIZE(&sblock);
     inodes_per_group = EXT2_INODES_PER_GROUP(&sblock);
     inode_size = EXT2_INODE_SIZE(&sblock);
+
+    volume_name = sblock.s_volume_name;
 
     LOG("Block size %d, inp %d, inodesize %d\n", blocksize, inodes_per_group, inode_size);
     totalGroups = (sblock.s_blocks_count)/EXT2_BLOCKS_PER_GROUP(&sblock);

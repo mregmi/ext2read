@@ -31,6 +31,7 @@
 #include <list>
 #include <string>
 #include <QCache>
+#include <stdio.h>
 
 #include "platform.h"
 #include "ext2fs.h"

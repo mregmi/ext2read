@@ -193,6 +193,7 @@ private:
     list <Ext2Partition *> nparts;
 
     int scan_ebr(FileHandle , lloff_t , int , int);
+    int scan_gpt(FileHandle , lloff_t , int , int);
     int scan_partitions(char *path, int);
     void clear_partitions();
 

@@ -1,1 +1,4 @@
-IDI_ICON1	ICON	DISCARDABLE	"resource\\ext2explore.ico"
+#include <windows.h>
+
+IDI_ICON1                           ICON DISCARDABLE  "resource\\ext2explore.ico"
+CREATEPROCESS_MANIFEST_RESOURCE_ID  RT_MANIFEST       "resource\\manifest.xml"

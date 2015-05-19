@@ -29,6 +29,7 @@ Ext2Partition::Ext2Partition(lloff_t size, lloff_t offset, int ssize, FileHandle
 {
     int ret;
 
+    desc = NULL;
     total_sectors = size;
     relative_sect = offset;
     handle = phandle;

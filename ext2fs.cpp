@@ -297,7 +297,7 @@ Ext2File *Ext2Partition::read_inode(uint32_t inum)
     src = (EXT2_INODE *)(inode_buffer + inode_index);
     file->inode = *src;
 
-    //LOG("BLKNUM is %d, inode_index %d\n", file->inode.i_size, inode_index);
+    LOG("BLKNUM is %d, inode_index %d\n", file->inode.i_size, inode_index);
     file->inode_num = inum;
     file->file_size = (lloff_t) src->i_size | ((lloff_t) src->i_size_high << 32);
     if(file->file_size == 0)

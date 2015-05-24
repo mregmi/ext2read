@@ -107,8 +107,9 @@ public:
 
 class LogicalVolume {
     int segment_count;
-    VolumeGroup *this_group;
+
 public:
+    VolumeGroup *this_group;
     QString uuid;
     QString volname;
     std::list <lv_segment *> segments;

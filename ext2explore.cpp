@@ -257,8 +257,10 @@ void Ext2Explore::on_action_item_dbclicked(const QModelIndex &index)
     parentItem = filemodel->itemFromIndex(index);
     fileData = parentItem->data(Qt::UserRole);
     parentFile = (Ext2File *) fileData.value<void *>();
-    if(!EXT2_S_ISDIR(parentFile->inode.i_mode))
+    if(!EXT2_S_ISDIR(parentFile->inode.i_mode)) {
+        LOG("File %s is not a directory\n", parentFile->file_name.c_str());
         return;
+    }
 
     ui->list->setRootIndex(index);
     if(parentFile->onview)
@@ -266,11 +268,11 @@ void Ext2Explore::on_action_item_dbclicked(const QModelIndex &index)
 
     part = parentFile->partition;
 
-    //LOG("Opened file %s\n",parentFile->file_name.c_str());
+    LOG("Opened file %s\n",parentFile->file_name.c_str());
     dir = part->open_dir(parentFile);
     while((files = part->read_dir(dir)) != NULL)
     {
-        //        LOG("Found File %s inode %d \n", files->file_name.c_str(), files->inode_num);
+        LOG("Found File %s inode %d \n", files->file_name.c_str(), files->inode_num);
 
         children = new QStandardItem(QIcon(handle_mime(files->file_name, files->inode.i_mode)),
                                      codec->toUnicode(files->file_name.c_str()));

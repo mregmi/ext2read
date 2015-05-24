@@ -21,7 +21,7 @@
  * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  **/
 
-
+#include <stdio.h>
 #include "ext2read.h"
 #include "lvm.h"
 
@@ -66,12 +66,12 @@ Ext2Partition::~Ext2Partition()
 void Ext2Partition::set_linux_name(const char *name, int disk, int partition)
 {
     char dchar = 'a' + disk;
-    char pchar = '1' + partition;
-
+    char str_buffer[10];
+    sprintf(str_buffer,"%d",partition);
 
     linux_name = name;
     linux_name.append(1, dchar);
-    linux_name.append(1, pchar);
+    linux_name.append(str_buffer);
 }
 
 string &Ext2Partition::get_linux_name()
@@ -285,8 +285,14 @@ Ext2File *Ext2Partition::read_inode(uint32_t inum)
     blknum = desc[group].bg_inode_table + (index / blocksize);
 
 
-    if(blknum != last_block)
+    if(blknum != last_block) {
         ret = ext2_readblock(blknum, inode_buffer);
+        if (ret < 0) {
+            LOG("Disk read failed\n");
+            return NULL;
+        }
+    }
+
 
     file = new Ext2File;
     if(!file)

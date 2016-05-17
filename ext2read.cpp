@@ -32,7 +32,7 @@
 #include "partition.h"
 #include "parttypes.h"
 #include "lvm.h"
-
+#include "gpt.h"
 
 
 Ext2Read::Ext2Read()
@@ -160,6 +160,77 @@ int Ext2Read::scan_ebr(FileHandle handle, lloff_t base, int sectsize, int disk)
     return logical;
 }
 
+/* Reads a GUID Partion Table */
+int Ext2Read::scan_gpt(FileHandle handle, lloff_t base, int sectsize, int disk)
+{
+    unsigned char sector[SECTOR_SIZE];
+    struct GPTHeader header;
+    struct GPTPartition entry;
+    Ext2Partition *partition;
+    char guid_buf[40];
+    uint32_t i;
+    int ret, j, entries_per_sector;
+    lloff_t offset;
+
+    ret = read_disk(handle, sector, base, 1, sectsize);
+    if(ret < 0)
+        return ret;
+
+    /* Fill the header structure with data from the sector. */
+    memcpy(&header, sector, sizeof(struct GPTHeader));
+    if (!valid_gpt_header(&header))
+    {
+        LOG("Not a valid GPT Header\n");
+        return 0;
+    }
+
+    if ((sectsize % header.entry_size) != 0)
+    {
+        LOG_ERROR("Sector size (%d bytes) is not a multiple of GPT Entry size "
+                  "(%d bytes)\n", sectsize, header.entry_size);
+        return 0;
+    }
+
+    entries_per_sector = sectsize / header.entry_size;
+    offset = header.partition_lba;
+    for (i = 0; i < header.num_partitions; i += entries_per_sector)
+    {
+        ret = read_disk(handle, sector, offset, 1, sectsize);
+        if (ret < 0)
+            return ret;
+        offset += 1;
+
+        for (j = 0; j < entries_per_sector; j += 1)
+        {
+            memcpy(&entry, sector + j * sizeof(struct GPTPartition), sizeof(struct GPTPartition));
+            if (gpt_guid_equal(&entry.type_guid, &gpt_guid_none))
+                continue;
+
+            gpt_guid_to_string(guid_buf, &entry.type_guid);
+            LOG("Found GPT Partition '%ls' - %s\n", entry.name, guid_buf);
+
+            if (gpt_guid_equal(&entry.type_guid, &gpt_guid_ms_basic_data) ||
+                gpt_guid_equal(&entry.type_guid, &gpt_guid_linux_fs_data) ||
+                gpt_guid_equal(&entry.type_guid, &gpt_guid_linux_home))
+            {
+                partition = new Ext2Partition(entry.last_lba - entry.first_lba,
+                                              entry.first_lba, sectsize, handle, NULL);
+                if (partition->is_valid)
+                {
+                    partition->set_linux_name("/dev/sd", disk, i + j);
+                    nparts.push_back(partition);
+                    LOG("Linux Partition found on disk %d GPT partition %d\n", disk, i + j);
+                }
+                else
+                {
+                    delete partition;
+                }
+            }
+        }
+    }
+
+    return 0;
+}
 
 /* Scans The partitions */
 int Ext2Read::scan_partitions(char *path, int diskno)
@@ -224,6 +295,12 @@ int Ext2Read::scan_partitions(char *path, int diskno)
             else if((part->sys_ind == 0x05) || (part->sys_ind == 0x0f))
             {
                 scan_ebr(handle, get_start_sect(part), sector_size, diskno);
+            }
+            else if (part->sys_ind == 0xEE)
+            {
+                /* If the disk contains a GPT, the so-called Protective MBR
+                 *  contains one partition of type EE spanning the entire disk. */
+                scan_gpt(handle, get_start_sect(part), sector_size, diskno);
             }
         }
     }

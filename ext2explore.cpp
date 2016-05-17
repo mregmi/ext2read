@@ -118,6 +118,7 @@ void Ext2Explore::init_root_fs()
     list<Ext2Partition *> parts;
     list<Ext2Partition *>::iterator i;
     QStandardItem *item;
+    QString text;
     void *ptr;
 
     parts = app->get_partitions();
@@ -129,8 +130,8 @@ void Ext2Explore::init_root_fs()
         if(temp->onview)
             continue;
 
-        item = new QStandardItem(QIcon(QString::fromAscii(":/icons/resource/disk.png")),
-                                 QString::fromStdString(temp->get_linux_name()));
+        text = QString("%1 [%2]").arg(temp->get_linux_name().c_str(), temp->get_volume_name().c_str());
+        item = new QStandardItem(QIcon(QString::fromAscii(":/icons/resource/disk.png")), text);
         if(!temp->get_root())
         {
             LOG("Root folder for %s is invalid. \n", temp->get_linux_name().c_str());

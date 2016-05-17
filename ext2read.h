@@ -31,6 +31,7 @@
 #include <list>
 #include <string>
 #include <QCache>
+#include <stdio.h>
 
 #include "platform.h"
 #include "ext2fs.h"
@@ -146,6 +147,7 @@ class Ext2Partition {
     lloff_t	total_sectors;
     lloff_t 	relative_sect;
     string      linux_name;
+    string      volume_name;
 
     int inodes_per_group;
     int inode_size;
@@ -175,6 +177,7 @@ public:
     void set_linux_name(const char *, int , int);
     void set_image_name(const char *name) { linux_name.assign(name); }
     string &get_linux_name();
+    string &get_volume_name();
     Ext2File *get_root() { return root; }
     int get_blocksize() { return blocksize; }
     Ext2File *read_inode(uint32_t inum);
@@ -192,6 +195,7 @@ private:
     list <Ext2Partition *> nparts;
 
     int scan_ebr(FileHandle , lloff_t , int , int);
+    int scan_gpt(FileHandle , lloff_t , int , int);
     int scan_partitions(char *path, int);
     void clear_partitions();
 

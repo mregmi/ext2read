@@ -25,7 +25,8 @@ HEADERS += platform.h \
     partition.h \
     ext2properties.h \
     ext2about.h \
-    ext2copyfile.h
+    ext2copyfile.h \
+    gpt.h
 FORMS += ext2explore.ui \
     properties.ui \
     about.ui \

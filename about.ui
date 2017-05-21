@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>422</width>
-    <height>276</height>
+    <width>364</width>
+    <height>388</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -21,14 +21,14 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>422</width>
-    <height>276</height>
+    <width>364</width>
+    <height>388</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>422</width>
-    <height>276</height>
+    <width>364</width>
+    <height>388</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -43,9 +43,9 @@
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
     <rect>
-     <x>70</x>
-     <y>251</y>
-     <width>341</width>
+     <x>150</x>
+     <y>360</y>
+     <width>61</width>
      <height>21</height>
     </rect>
    </property>
@@ -61,27 +61,12 @@
     <rect>
      <x>10</x>
      <y>10</y>
-     <width>401</width>
-     <height>231</height>
+     <width>341</width>
+     <height>341</height>
     </rect>
    </property>
    <property name="text">
-    <string>Ext2Explore 2.1
-(C) 2010 Manish Regmi  (regmi dot manish at gmail.com)
-Ext2explore  is an explorer like utility to explore ext2/ext3 files. With this utility you can view Ext2/3/4 files in your disks and disk images.
-
-  This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by 
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Ext2Explore 2.1&lt;/p&gt;&lt;p&gt;© 2010 Manish Regmi (regmi dot manish at gmail.com)&lt;/p&gt;&lt;p&gt;Ext2Explore is an explorer like utility to explore ext2/ext3 files. With this utility, you can view Ext2/3/4 files in your disks and disk images.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;License&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.&lt;/p&gt;&lt;p&gt;This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.&lt;/p&gt;&lt;p&gt;You should have received a copy of the GNU General Public License along with this program. If not, see &amp;lt;http://www.gnu.org/licenses/&amp;gt;.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Credits&lt;/span&gt;&lt;/p&gt;&lt;p&gt;This program makes extensive use of the following libraries:&lt;/p&gt;&lt;p&gt;Qt - Copyright © 2015 The Qt Company - GPLv3&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
    <property name="scaledContents">
     <bool>true</bool>

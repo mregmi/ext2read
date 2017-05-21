@@ -33,3 +33,4 @@ FORMS += ext2explore.ui \
     ext2progress.ui
 RESOURCES += ext2explore.qrc
 RC_FILE = app.rc
+QT += widgets

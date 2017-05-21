@@ -38,31 +38,31 @@ void Ext2Properties::set_properties(Ext2File *file)
     properties->fileName->setText(filename);
     set_mode(mode);
 
-    properties->typeval->setText(QString::fromAscii(get_type_string(file->file_type)));
+    properties->typeval->setText(QString::fromUtf8(get_type_string(file->file_type)));
 
     sizeblock = ((file->file_size + file->partition->get_blocksize() - 1) /
                  file->partition->get_blocksize()) * file->partition->get_blocksize();
     if(file->file_size < 1024)
     {
 
-        sizestr = QString::fromAscii("%1 Bytes").arg(file->file_size);
-        szstrblock = QString::fromAscii("%1 Bytes").arg(sizeblock);
+        sizestr = QString("%1 Bytes").arg(file->file_size);
+        szstrblock = QString("%1 Bytes").arg(sizeblock);
 
     }
     else if ((file->file_size >= 1024) && (file->file_size < (1024 * 1024)))
     {
-        sizestr = QString::fromAscii("%1 KB (%L2 Bytes)").arg((double)file->file_size/1024, 0, 'g', 3).arg(file->file_size);
-        szstrblock = QString::fromAscii("%1 KB (%L2 Bytes)").arg((double)sizeblock/1024, 0, 'g', 3).arg(sizeblock);
+        sizestr = QString("%1 KB (%L2 Bytes)").arg((double)file->file_size/1024, 0, 'g', 3).arg(file->file_size);
+        szstrblock = QString("%1 KB (%L2 Bytes)").arg((double)sizeblock/1024, 0, 'g', 3).arg(sizeblock);
     }
     else if ((file->file_size >= (1024 * 1024)) && (file->file_size < (1024 * 1024 * 1024)))
     {
-        sizestr = QString::fromAscii("%1 MB (%L2 Bytes)").arg((double)file->file_size/(1024 * 1024), 0, 'g', 3).arg(file->file_size);
-        szstrblock = QString::fromAscii("%1 MB (%L2 Bytes)").arg((double)sizeblock/(1024 * 1024), 0, 'g', 3).arg(sizeblock);
+        sizestr = QString("%1 MB (%L2 Bytes)").arg((double)file->file_size/(1024 * 1024), 0, 'g', 3).arg(file->file_size);
+        szstrblock = QString("%1 MB (%L2 Bytes)").arg((double)sizeblock/(1024 * 1024), 0, 'g', 3).arg(sizeblock);
     }
     else if (file->file_size >= (1024 * 1024 *1024))
     {
-        sizestr = QString::fromAscii("%1 GB (%L2 Bytes)").arg((double)file->file_size/(1024 * 1024 * 1024), 0, 'g', 3).arg(file->file_size);
-        szstrblock = QString::fromAscii("%1 GB (%L2 Bytes)").arg((double)sizeblock/(1024 * 1024 * 1024), 0, 'g', 3).arg(sizeblock);
+        sizestr = QString("%1 GB (%L2 Bytes)").arg((double)file->file_size/(1024 * 1024 * 1024), 0, 'g', 3).arg(file->file_size);
+        szstrblock = QString("%1 GB (%L2 Bytes)").arg((double)sizeblock/(1024 * 1024 * 1024), 0, 'g', 3).arg(sizeblock);
     }
 
     properties->sizeval->setText(sizestr);

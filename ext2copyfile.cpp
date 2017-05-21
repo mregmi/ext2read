@@ -65,8 +65,8 @@ void Ext2CopyFile::start_copy()
 bool Ext2CopyFile::showMessageBox()
 {
     QMessageBox msgBox;
-    msgBox.setText(QString::fromAscii("You pressed the cancel button on the progress dialog box."));
-    msgBox.setInformativeText(QString::fromAscii("Are you sure you want to cancel copying?"));
+    msgBox.setText(QString("You pressed the cancel button on the progress dialog box."));
+    msgBox.setInformativeText(QString("Are you sure you want to cancel copying?"));
     msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
     msgBox.setDefaultButton(QMessageBox::No);
     int ret = msgBox.exec();
@@ -146,7 +146,6 @@ bool Ext2CopyProcess::copy_file(QString &destfile, Ext2File *srcfile)
 {
     lloff_t blocks, blkindex;
     QString qsrc;
-    QString nullstr = QString::fromAscii("");
     QByteArray ba;
     int extra;
     int ret;
@@ -219,7 +218,7 @@ bool Ext2CopyProcess::copy_folder(QString &path, Ext2File *parent)
     while((child = part->read_dir(dirent)) != NULL)
     {
         filetosave = rootname;
-        filetosave.append(QString::fromAscii("/"));
+        filetosave.append(QString("/"));
         filetosave.append(codec->toUnicode(parent->file_name.c_str()));
         if(EXT2_S_ISDIR(child->inode.i_mode))
         {
@@ -239,7 +238,7 @@ bool Ext2CopyProcess::copy_folder(QString &path, Ext2File *parent)
             //return false;
         }
 
-        filetosave.append(QString::fromAscii("/"));
+        filetosave.append(QString("/"));
         filetosave.append(codec->toUnicode(child->file_name.c_str()));
         ret = copy_file(filetosave, child);
         if((ret == false) && (cancelOperation == true))

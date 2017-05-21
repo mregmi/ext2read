@@ -110,7 +110,7 @@ int LVM::scan_pv()
 
         metadata[label->pv_length] = 0;
         LOG("\n%s", metadata);
-        pv_metadata = QString::fromAscii(metadata, label->pv_length);
+        pv_metadata = QString::fromUtf8(metadata, label->pv_length);
         parse_metadata();
         delete [] metadata;
         break;
@@ -258,7 +258,7 @@ int LVM::parse_metadata()
         lvol = grp->find_logical_volume(suuid);
         if(!lvol)
             lvol = grp->add_logical_volume(suuid, nsegs, lvolname);
-        LOG("Logical Volume found. Name %s, segments %d\n", lvol->volname.toAscii().data(), nsegs);
+        LOG("Logical Volume found. Name %s, segments %d\n", lvol->volname.toUtf8().data(), nsegs);
         for(int i = 0; i < nsegs; i++)
         {
             num = pv_metadata.indexOf(QRegExp("segment[0-9]+"), num);
@@ -417,13 +417,13 @@ void VolumeGroup::logical_mount()
 
         int off = ((root->start_extent + root->stripe->stripe_start_extent) * lvol->this_group->extent_size);
         LOG("PE start %d offset %d extoff %d B=%d A=%d %s\n", root->pvolumes->pe_start,
-            root->pvolumes->offset, lvol->this_group->extent_size, root->start_extent, root->stripe->stripe_start_extent, lvol->volname.toAscii().data());
+            root->pvolumes->offset, lvol->this_group->extent_size, root->start_extent, root->stripe->stripe_start_extent, lvol->volname.toUtf8().data());
         start = root->pvolumes->pe_start + root->pvolumes->offset + off;
         partition = new Ext2Partition(root->pvolumes->dev_size, start, SECTOR_SIZE, root->pvolumes->handle, lvol);
         if(partition->is_valid)
         {
             QByteArray ba;
-            ba = lvol->volname.toAscii();
+            ba = lvol->volname.toUtf8();
             partition->set_image_name(ba.data());
             LOG("adding %s\n", partition->get_linux_name().c_str());
             ext2read->add_partition(partition);

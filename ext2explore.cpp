@@ -131,7 +131,7 @@ void Ext2Explore::init_root_fs()
             continue;
 
         text = QString("%1 [%2]").arg(temp->get_linux_name().c_str(), temp->get_volume_name().c_str());
-        item = new QStandardItem(QIcon(QString::fromAscii(":/icons/resource/disk.png")), text);
+        item = new QStandardItem(QIcon(QString(":/icons/resource/disk.png")), text);
         if(!temp->get_root())
         {
             LOG("Root folder for %s is invalid. \n", temp->get_linux_name().c_str());
@@ -153,9 +153,9 @@ QString Ext2Explore::handle_mime(string file, uint16_t mode)
     QString str;
 
     if(EXT2_S_ISDIR(mode))
-        str = QString::fromAscii(":/icons/resource/file_folder.png");
+        str = QString(":/icons/resource/file_folder.png");
     else
-        str = QString::fromAscii(":/icons/resource/file_unknown.png");
+        str = QString(":/icons/resource/file_unknown.png");
 
     return str;
 }
@@ -219,10 +219,10 @@ void Ext2Explore::on_actionOpen_Image_triggered()
     QString filename;
 
     filename = QFileDialog::getOpenFileName(this,
-                                            tr("Open Disk Image"), QString::fromAscii(""), tr("All Disk Image Files (*)"));
+                                            tr("Open Disk Image"), QString(""), tr("All Disk Image Files (*)"));
     //LOG("Opening file %s as a disk image. \n", filename.toAscii());
 
-    result = app->add_loopback(filename.toAscii());
+    result = app->add_loopback(filename.toUtf8());
     if(result <= 0)
     {
         LOG("No valid Ext2 Partitions found in the disk image.");
@@ -325,7 +325,7 @@ void Ext2Explore::on_action_Save_triggered()
     if(EXT2_S_ISDIR(file->inode.i_mode))
     {
         filename = QFileDialog::getExistingDirectory(this, tr("Save folder in"),
-                                                     QString::fromAscii(""),
+                                                     QString(""),
                                                      QFileDialog::ShowDirsOnly);
     }
     else
